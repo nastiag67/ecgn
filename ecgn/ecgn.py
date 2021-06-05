@@ -2,3 +2,6 @@
 main
 new dev
 """
+
+def test():
+    print('ok')
