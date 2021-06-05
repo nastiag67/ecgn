@@ -1,1 +1,1 @@
-"""Preprocessing of the ECG data."""
+"""Preprocessing and analysis of the ECG data."""
