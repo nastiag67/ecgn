@@ -22,9 +22,7 @@ from sklearn.metrics import f1_score
 from sklearn.metrics import log_loss
 
 # my packages
-import ecgn
 import tools as t
-# from tools import classification as c
 
 ```
 
@@ -43,8 +41,7 @@ https://archive.physionet.org/physiobank/database/html/mitdbdir/intro.htm
 
 Each row is one beat taken from the original source (represents 10 seconds of data)
 
-__Task__
-- multiclass classification
+__Task:__ multiclass classification.
 
 
 ```python
@@ -71,8 +68,10 @@ X_test = test[test.columns[:-1]]
 y_test = test[test.columns[-1]]
 ```
 
-# Exploratory data analysis
+# EXPLORATORY DATA ANALYSIS
 
+- The observations are skewed.
+- Normal heartbeat is the most popular class. Deviations from this class are scarce, especially for class 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat) and require more attention.
 
 ```python
 reload(eda)
@@ -145,7 +144,6 @@ leg = iter(['N - Normal beat',
 colors = iter(['skyblue', 'red', 'lightgreen', 'orange', 'black'])
 for i, ax in enumerate(axes.flatten()):
     ax.plot(r_sample.iloc[i, :187], color=next(colors))
-#     print(next(leg))
     ax.legend(next(leg))
 plt.show()
 
@@ -159,18 +157,18 @@ plt.show()
 
 # MODEL SELECTION  
 
-__The problem__:  
+__The problem:__  
 Although the accuracy is pretty high (90%), recall is very low for some classes (1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat)). Since the dataset is unbalanced (normal beat represents the majority of the datapoints), accuracy is not a good measure for assessing model performance, because we should focus on positive cases for these classes if we wish to identify the disease. 
 
 So, we need to improve __recall__, the ability of a model to find all relevant cases within a dataset, while keeping the precision at an appropriate level.
 
 
 
-## ML
+## Individual machine learning models
 
-- compare models constructed on balanced / unbalanced dataset
-- models: SVM, random forests, boosting
-- fine tuning
+- Original dataset was used (no feature selection, no sampling).
+- Models which were compared: Naive Bayes, Logistic regression, SVM, kNN, Decision trees.
+- Best performing models based on recall: SVM, kNN, DT.
 
 
 ```python
@@ -317,7 +315,17 @@ best_model, allmodels = ci_individualm.classification_models(multiclass=True,
 
 #### Conclusions:
 
-1. ___recall = accuracy:___
-    - indicates that sensitivity (a.k.a. recall, or TPR) is equal to specificity (a.k.a. selectivity, or TNR), and thus they are also equal to accuracy. This means that the model's ability to correctly classify positive samples is same as its ability to correctly classify negative samples.
+1. ___Recall equals accuracy:___
+    - indicates that sensitivity (TPR) is equal to specificity (TNR), and thus they are also equal to accuracy. This means that the model's ability to correctly classify positive samples is same as its ability to correctly classify negative samples.
+
+1. ___Model performance:___
+    - SVM shows the best results among all tested models. However, confusion matrix shows that even it has problems with classifying labels 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat).
+
+# TODO
+
+- Fine tuning
+- Compare models constructed on balanced / unbalanced dataset using different down-sampling/upsampling techniques.
+- Try ensembles (random forests) and boosting.
+
 
 
