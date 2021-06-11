@@ -22,7 +22,6 @@ from sklearn.metrics import log_loss
 
 # my packages
 import tools as t
-
 ```
 
 # DATASET  
@@ -40,7 +39,7 @@ https://archive.physionet.org/physiobank/database/html/mitdbdir/intro.htm
 
 Each row is one beat taken from the original source (represents 10 seconds of data)
 
-__Task:__ multiclass classification.
+__Task:__ multiclass classification
 
 
 ```python
@@ -72,6 +71,18 @@ y_test = test[test.columns[-1]]
 - The observations are skewed.
 - Normal heartbeat is the most popular class. Deviations from this class are scarce, especially for class 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat) and require more attention.
 
+
+```python
+from tools.preprocessing import eda
+```
+
+
+```python
+cls_df = eda.Dataset(X_train)
+# cls_df.get_overview()
+```
+
+
 ```python
 reload(eda)
 cls_df = eda.Dataset(X_train)
@@ -85,7 +96,7 @@ cls_df.get_summary(y=y_train,
     plot_boxplots=False)
 ```
 
-    NaNs:  []
+    NaNs: []
     Unique formats:  [dtype('float64')]
     Possible categorical variables (<10 unique values):  []
     Min value < 0:  []
@@ -99,6 +110,7 @@ cls_df.get_summary(y=y_train,
     Plotting distributions of variables against normal distribution
     
 
+    
 ![png](README.ipynb_files/README.ipynb_6_2.png)
     
 
@@ -143,6 +155,7 @@ leg = iter(['N - Normal beat',
 colors = iter(['skyblue', 'red', 'lightgreen', 'orange', 'black'])
 for i, ax in enumerate(axes.flatten()):
     ax.plot(r_sample.iloc[i, :187], color=next(colors))
+#     print(next(leg))
     ax.legend(next(leg))
 plt.show()
 
@@ -156,7 +169,7 @@ plt.show()
 
 # MODEL SELECTION  
 
-__The problem:__  
+__The problem__:  
 Although the accuracy is pretty high (90%), recall is very low for some classes (1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat)). Since the dataset is unbalanced (normal beat represents the majority of the datapoints), accuracy is not a good measure for assessing model performance, because we should focus on positive cases for these classes if we wish to identify the disease. 
 
 So, we need to improve __recall__, the ability of a model to find all relevant cases within a dataset, while keeping the precision at an appropriate level.
@@ -175,10 +188,6 @@ So, we need to improve __recall__, the ability of a model to find all relevant c
 X_train, X_val, y_train, y_val = train_test_split(train.iloc[:,:-1], train.iloc[:,-1], 
                                                     test_size=0.2, random_state=42)
 
-```
-
-
-```python
 import multiprocessing
 n_jobs=multiprocessing.cpu_count()  # 56
 
@@ -195,10 +204,13 @@ steps = [
 #     ('pca', PCA(n_components=)),
 ]
 
-ci_individualm = c.SimpleML(X_train, y_train, X_val, y_val)
+cls_models = c.SimpleML(X_train, y_train, X_val, y_val)
+
+```
 
 
-best_model, allmodels = ci_individualm.classification_models(multiclass=True,
+```python
+best_model, allmodels = cls_models.classification_models(multiclass=True,
                                                              steps=steps,
                                                                      metric='recall',
                                                                      average='weighted',
@@ -222,10 +234,12 @@ best_model, allmodels = ci_individualm.classification_models(multiclass=True,
 
 
     
-![png](README.ipynb_files/README.ipynb_18_1.png)
+![png](README.ipynb_files/README.ipynb_14_1.png)
     
 
 
+    [('NB', GaussianNB())]
+    []
     
     ========== LR RESULT ==========
     Mean cross-validated score of the best_estimator: 0.9126
@@ -239,11 +253,12 @@ best_model, allmodels = ci_individualm.classification_models(multiclass=True,
 
 
     
-![png](README.ipynb_files/README.ipynb_18_3.png)
+![png](README.ipynb_files/README.ipynb_14_3.png)
     
 
 
-
+    [('LR', LogisticRegression(max_iter=10000))]
+    []
     
     ========== SVM RESULT ==========
     Mean cross-validated score of the best_estimator: 0.9803
@@ -257,11 +272,12 @@ best_model, allmodels = ci_individualm.classification_models(multiclass=True,
 
 
     
-![png](README.ipynb_files/README.ipynb_18_5.png)
+![png](README.ipynb_files/README.ipynb_14_5.png)
     
 
 
-
+    [('SVM', SVC())]
+    []
     
     ========== KNN RESULT ==========
     Mean cross-validated score of the best_estimator: 0.9773
@@ -275,11 +291,12 @@ best_model, allmodels = ci_individualm.classification_models(multiclass=True,
 
 
     
-![png](README.ipynb_files/README.ipynb_18_7.png)
+![png](README.ipynb_files/README.ipynb_14_7.png)
     
 
 
-
+    [('KNN', KNeighborsClassifier())]
+    []
     
     ========== DT RESULT ==========
     Mean cross-validated score of the best_estimator: 0.9542
@@ -293,11 +310,12 @@ best_model, allmodels = ci_individualm.classification_models(multiclass=True,
 
 
     
-![png](README.ipynb_files/README.ipynb_18_9.png)
+![png](README.ipynb_files/README.ipynb_14_9.png)
     
 
 
-
+    [('DT', DecisionTreeClassifier())]
+    []
     __________________________________________________
     Best model: SVM
     Tuned parameters: {'SVM__C': 50, 'SVM__gamma': 0.1, 'SVM__kernel': 'rbf'}
@@ -317,14 +335,231 @@ best_model, allmodels = ci_individualm.classification_models(multiclass=True,
 1. ___Recall equals accuracy:___
     - indicates that sensitivity (TPR) is equal to specificity (TNR), and thus they are also equal to accuracy. This means that the model's ability to correctly classify positive samples is same as its ability to correctly classify negative samples.
 
+
 1. ___Model performance:___
     - SVM shows the best results among all tested models. However, confusion matrix shows that even it has problems with classifying labels 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat).
+
+
+## Ensembles and boosting
+
+### XGBoost
+
+
+```python
+%%time
+
+import xgboost as xgb
+
+name = 'XGB'
+model = xgb.XGBClassifier(    
+    seed=42,
+    verbosity=0,
+    use_label_encoder=False,
+    objective='multi:softmax',
+    num_class=5,
+#     eval_metric='mlogloss',
+    eval_metric='merror',
+)
+
+steps=[]
+
+parameters = {    
+    'XGB__eta': [0.05, 0.3, 0.5],  # 0.3
+    'XGB__gamma': [0, 1, 5],  # 0
+    'XGB__max_depth': [3, 6, 10],  # 6
+    'XGB__min_child_weight': [0.5, 1],  # 1
+    'XGB__subsample': [0.7, 1],  # 1
+    'XGB__sampling_method': ['uniform', 'gradient_based'],  # uniform
+#     'XGB__colsample_bytree': [0.7],  # 1
+    'XGB__lambda': [1],  # 1
+    'XGB__alpha': [0],  # 0
+    'XGB__tree_method': ['auto'],  # auto
+    'XGB__scale_pos_weight': [0.3, 0.7, 1],  # 1
+    'XGB__predictor': ['cpu_predictor'],  # auto
+    'XGB__num_parallel_tree': [1],  # 1
+
+#     n_jobs = n_jobs
+}
+# https://xgboost.readthedocs.io/en/latest/parameter.html#general-parameters
+
+model_xgb = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='weighted',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=56,
+                                    verbose=1
+                                    )
+
+# Wall time: 4min 16s
+# Wall time: 3min 5s
+# 
+```
+
+    Fitting 5 folds for each of 648 candidates, totalling 3240 fits
+    
+
+    [Parallel(n_jobs=56)]: Using backend LokyBackend with 56 concurrent workers.
+    [Parallel(n_jobs=56)]: Done  88 tasks      | elapsed: 18.2min
+    [Parallel(n_jobs=56)]: Done 338 tasks      | elapsed: 102.6min
+    [Parallel(n_jobs=56)]: Done 688 tasks      | elapsed: 204.1min
+    [Parallel(n_jobs=56)]: Done 1138 tasks      | elapsed: 330.1min
+    [Parallel(n_jobs=56)]: Done 1688 tasks      | elapsed: 473.6min
+    [Parallel(n_jobs=56)]: Done 2338 tasks      | elapsed: 659.1min
+    [Parallel(n_jobs=56)]: Done 3088 tasks      | elapsed: 860.8min
+    [Parallel(n_jobs=56)]: Done 3240 out of 3240 | elapsed: 915.8min finished
+    
+
+    Mean cross-validated score of the best_estimator: 0.9805
+    Tuned parameters: {'XGB__alpha': 0, 'XGB__eta': 0.5, 'XGB__gamma': 0, 'XGB__lambda': 1, 'XGB__max_depth': 10, 'XGB__min_child_weight': 0.5, 'XGB__num_parallel_tree': 1, 'XGB__predictor': 'cpu_predictor', 'XGB__sampling_method': 'uniform', 'XGB__scale_pos_weight': 0.3, 'XGB__subsample': 0.7, 'XGB__tree_method': 'auto'}
+    F1-score: 0.9806
+    Precision: 0.9811
+    Recall: 0.9814
+    Accuracy on train data: 1.0
+    Accuracy on test data: 0.9814
+    
+
+
+    
+![png](README.ipynb_files/README.ipynb_18_3.png)
+    
+
+
+    Wall time: 15h 16min 37s
+    
+
+### Gradient boosting
+
+
+```python
+from sklearn.ensemble import GradientBoostingClassifier
+
+name='GradientBoosting'
+model = GradientBoostingClassifier(random_state=42)
+
+steps=[]
+
+parameters = {}
+
+model_gb = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='weighted',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=45,
+                                    verbose=1
+                                    )
+
+```
+
+### LightGBM
+
+
+```python
+import lightgbm as lgb
+
+name='LGBMClassifier
+lgbm = lgb.LGBMClassifier(seed=42)
+
+steps=[]
+
+parameters = {}
+
+model_lgbm = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='weighted',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=45,
+                                    verbose=1
+                                    )
+```
+
+### AdaBoost
+
+
+```python
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
+from sklearn.tree import DecisionTreeClassifier
+
+name='AdaBoost'
+model = AdaBoostClassifier(random_state=42)
+
+steps=[]
+
+parameters = {}
+
+model_ada = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='weighted',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=45,
+                                    verbose=1
+                                    )
+```
+
+### Random forests
+
+
+```python
+from sklearn.ensemble import RandomForestClassifier
+
+name='RandomForest'
+model = RandomForestClassifier(random_state=42)
+
+steps=[]
+
+parameters = {
+    
+}
+
+model_ada = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='weighted',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=45,
+                                    verbose=1
+                                    )
+```
+
 
 # TODO
 
 - Fine tuning
 - Compare models constructed on balanced / unbalanced dataset using different down-sampling/upsampling techniques.
 - Try ensembles (random forests) and boosting.
-
 
 
