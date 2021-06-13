@@ -13,7 +13,7 @@ __[3. Model Selection](#MODEL-SELECTION)__
     [3.2.4. AdaBoost](#AdaBoost)  
     [3.2.5. Random forests](#Random-forests)  
     
-__[4. Results](#Summary-of-the-results:)__  
+__[4. Results](#Summary-of-the-results)__  
 
 __[5. TO DO](#TODO)__  
 
@@ -782,7 +782,7 @@ model_rf = cls_models.checkmodel(
 
 __[top](#Contents)__ 
 
-### Summary of the results:
+# Summary of the results
 
 
 | Model                 | F1 score | Precision | Recall  | Accuracy |
