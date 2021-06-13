@@ -101,7 +101,7 @@ cls_df.get_summary(y=y_train,
     Possible categorical variables (<10 unique values):  []
     Min value < 0:  []
     Observations per class:
-    0    72471
+     0    72471
     1     2223
     2     5788
     3      641
@@ -110,7 +110,8 @@ cls_df.get_summary(y=y_train,
     Plotting distributions of variables against normal distribution
     
 
-    
+
+        
 ![png](README.ipynb_files/README.ipynb_6_2.png)
     
 
@@ -176,12 +177,6 @@ So, we need to improve __recall__, the ability of a model to find all relevant c
 
 
 
-## Individual machine learning models
-
-- Original dataset was used (no feature selection, no sampling).
-- Models which were compared: Naive Bayes, Logistic regression, SVM, kNN, Decision trees.
-- Best performing models based on recall: SVM, kNN, DT.
-
 
 ```python
 #train validation split
@@ -207,6 +202,12 @@ steps = [
 cls_models = c.SimpleML(X_train, y_train, X_val, y_val)
 
 ```
+
+## Individual machine learning models
+
+- Original dataset was used (no feature selection, no sampling).
+- Models which were compared: Naive Bayes, Logistic regression, SVM, kNN, Decision trees.
+- Best performing models based on recall: SVM, kNN, DT.
 
 
 ```python
@@ -437,6 +438,7 @@ model_xgb = cls_models.checkmodel(
 
 
 ```python
+%%time
 from sklearn.ensemble import GradientBoostingClassifier
 
 name='GradientBoosting'
@@ -444,7 +446,22 @@ model = GradientBoostingClassifier(random_state=42)
 
 steps=[]
 
-parameters = {}
+parameters = {
+    'GradientBoosting__loss': ['deviance'],  # 'deviance'
+    'GradientBoosting__learning_rate': [0.1, 0.5, 0.01],  # 0.1
+    'GradientBoosting__n_estimators': [100, 500, 50],  # 100
+    'GradientBoosting__subsample': [1, 0.5, 0.7],  # 1
+    'GradientBoosting__criterion': ['friedman_mse'],  # 'friedman_mse'
+    'GradientBoosting__min_samples_split': [2, 5],  # 2
+    'GradientBoosting__min_samples_leaf': [1],  # 1
+    'GradientBoosting__min_weight_fraction_leaf': [0],  # 0
+    'GradientBoosting__max_depth': [3, 5],  # 3
+    'GradientBoosting__min_impurity_decrease': [0],  # 0
+#     'GradientBoosting__max_features': [None, 'auto', 'sqrt', 'log2'],  # None
+    'GradientBoosting__max_leaf_nodes': [None],  # None
+    'GradientBoosting__validation_fraction': [0.1],  # 0.1
+    'GradientBoosting__n_iter_no_change': [5],  # 0
+}
 
 model_gb = cls_models.checkmodel(
                                     name,
@@ -456,24 +473,71 @@ model_gb = cls_models.checkmodel(
                                     metric='recall',
                                     randomized_search=False,
                                     nfolds=5,
-                                    n_jobs=45,
+                                    n_jobs=56,
                                     verbose=1
                                     )
+# plt.savefig("learning.png", dpi=300, bbox_inches='tight')
 
 ```
+
+    Fitting 5 folds for each of 108 candidates, totalling 540 fits
+    
+
+    [Parallel(n_jobs=56)]: Using backend LokyBackend with 56 concurrent workers.
+    [Parallel(n_jobs=56)]: Done  88 tasks      | elapsed: 37.4min
+    [Parallel(n_jobs=56)]: Done 338 tasks      | elapsed: 75.8min
+    [Parallel(n_jobs=56)]: Done 540 out of 540 | elapsed: 363.2min finished
+    
+
+    Mean cross-validated score of the best_estimator: 0.9682
+    Tuned parameters: {'GradientBoosting__criterion': 'friedman_mse', 'GradientBoosting__learning_rate': 0.1, 'GradientBoosting__loss': 'deviance', 'GradientBoosting__max_depth': 5, 'GradientBoosting__max_leaf_nodes': None, 'GradientBoosting__min_impurity_decrease': 0, 'GradientBoosting__min_samples_leaf': 1, 'GradientBoosting__min_samples_split': 2, 'GradientBoosting__min_weight_fraction_leaf': 0, 'GradientBoosting__n_estimators': 500, 'GradientBoosting__n_iter_no_change': 5, 'GradientBoosting__subsample': 1, 'GradientBoosting__validation_fraction': 0.1}
+    F1-score: 0.9707
+    Precision: 0.9709
+    Recall: 0.9718
+    Accuracy on train data: 0.9904
+    Accuracy on test data: 0.9718
+    
+
+
+    
+![png](README.ipynb_files/README.ipynb_20_3.png)
+    
+
+
+    Wall time: 7h 7min 57s
+    
 
 ### LightGBM
 
 
 ```python
+%%time
 import lightgbm as lgb
 
-name='LGBMClassifier
-lgbm = lgb.LGBMClassifier(seed=42)
+name='LGBMClassifier'
+model = lgb.LGBMClassifier(seed=42, random_state=42,
+                         objective='multiclass', 
+                         n_jobs=51
+                         )
 
 steps=[]
 
-parameters = {}
+parameters = {
+    'LGBMClassifier__boosting_type': ['gbdt'],  # 'gbdt'
+    'LGBMClassifier__num_leaves': [31],  # 31
+    'LGBMClassifier__max_depth': [-1, 10, 50],  # -1
+    'LGBMClassifier__learning_rate': [0.1, 0.05, 0.5],  # 0.1
+    'LGBMClassifier__n_estimators': [100, 500],  # 100
+#     'LGBMClassifier__subsample_for_bin': [200000],  # 200000
+    'LGBMClassifier__class_weight': [None, 'balanced', {0:0.1, 1:0.3, 2:0.1, 3:0.4, 4:0.1}],  # None
+#     'LGBMClassifier__min_split_gain': [0],  # 0
+#     'LGBMClassifier__min_child_weight': [1e-3],  # 1e-3
+    'LGBMClassifier__min_child_samples': [20],  # 20
+    'LGBMClassifier__subsample': [1, 0.7],  # 1
+#     'LGBMClassifier__colsample_bytree': [1],  # 1
+    'LGBMClassifier__reg_alpha': [0, 0.03, 0.07],  # 0
+    'LGBMClassifier__reg_lambda': [0, 0.03, 0.07],  # 0
+}
 
 model_lgbm = cls_models.checkmodel(
                                     name,
@@ -485,15 +549,25 @@ model_lgbm = cls_models.checkmodel(
                                     metric='recall',
                                     randomized_search=False,
                                     nfolds=5,
-                                    n_jobs=45,
+                                    n_jobs=56,
                                     verbose=1
                                     )
 ```
+
+    Fitting 5 folds for each of 972 candidates, totalling 4860 fits
+    
+
+    [Parallel(n_jobs=56)]: Using backend LokyBackend with 56 concurrent workers.
+    [Parallel(n_jobs=56)]: Done  88 tasks      | elapsed:  5.7min
+    [Parallel(n_jobs=56)]: Done 338 tasks      | elapsed: 36.3min
+    [Parallel(n_jobs=56)]: Done 688 tasks      | elapsed: 72.6min
+    
 
 ### AdaBoost
 
 
 ```python
+%%time
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.linear_model import LogisticRegression
@@ -508,36 +582,11 @@ model = AdaBoostClassifier(random_state=42)
 
 steps=[]
 
-parameters = {}
-
-model_ada = cls_models.checkmodel(
-                                    name,
-                                    model,
-                                    steps=steps,
-                                    parameters=parameters,
-                                    average='weighted',
-                                    multiclass=True,
-                                    metric='recall',
-                                    randomized_search=False,
-                                    nfolds=5,
-                                    n_jobs=45,
-                                    verbose=1
-                                    )
-```
-
-### Random forests
-
-
-```python
-from sklearn.ensemble import RandomForestClassifier
-
-name='RandomForest'
-model = RandomForestClassifier(random_state=42)
-
-steps=[]
-
 parameters = {
-    
+    'AdaBoost__base_estimator': [None],  # None
+    'AdaBoost__n_estimators': [50, 200, 500],  # 50
+    'AdaBoost__learning_rate': [1, 0.05, 0.5],  # 1
+#     'AdaBoost__algorithm': ['SAMME.R'],  # SAMME.R
 }
 
 model_ada = cls_models.checkmodel(
@@ -555,11 +604,113 @@ model_ada = cls_models.checkmodel(
                                     )
 ```
 
+    Fitting 5 folds for each of 9 candidates, totalling 45 fits
+    
+
+    [Parallel(n_jobs=45)]: Using backend LokyBackend with 45 concurrent workers.
+    [Parallel(n_jobs=45)]: Done   2 out of  45 | elapsed:  1.2min remaining: 24.8min
+    [Parallel(n_jobs=45)]: Done  45 out of  45 | elapsed:  8.7min finished
+    
+
+    Mean cross-validated score of the best_estimator: 0.8722
+            Parameter Tuned value
+    0  base_estimator        None
+    1   learning_rate         0.5
+    2    n_estimators          50
+    
+
+    C:\ProgramData\Anaconda3\lib\site-packages\sklearn\metrics\_classification.py:1221: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+      _warn_prf(average, modifier, msg_start, len(result))
+    
+
+    F1-score: 0.8605
+    Precision: 0.8462
+    Recall: 0.8782
+    Accuracy on train data: 0.8757
+    Accuracy on test data: 0.8782
+    
+
+
+    
+![png](README.ipynb_files/README.ipynb_24_5.png)
+    
+
+
+    Wall time: 9min 37s
+    
+
+### Random forests
+
+
+```python
+%%time
+from sklearn.ensemble import RandomForestClassifier
+
+name='RandomForest'
+model = RandomForestClassifier(random_state=42,
+                              n_jobs=None,  # None
+                              )
+
+steps=[]
+
+parameters = {
+    'RandomForest__n_estimators': [100, 500],  # 100
+    'RandomForest__criterion': ['gini'],  # gini
+    'RandomForest__max_depth': [None, 5, 10],  # None
+    'RandomForest__min_samples_split': [2, 5],  # 2
+    'RandomForest__min_samples_leaf': [1, 5],  # 1
+    'RandomForest__min_weight_fraction_leaf': [0],  # 0
+#     'RandomForest__max_features': ['auto'],  # auto
+    'RandomForest__max_leaf_nodes': [None],  # None
+    'RandomForest__min_impurity_decrease': [0],  # 0
+    'RandomForest__bootstrap': [True],  # True
+    'RandomForest__oob_score': [True],  # False - only if bootstrap=True
+    'RandomForest__max_samples': [None],  # None - if bootstrap=True
+    'RandomForest__class_weight': [None, 'balanced', {0:0.1, 1:0.3, 2:0.1, 3:0.4, 4:0.1}],  # None
+}
+
+model_rf = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='weighted',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=56,
+                                    verbose=1
+                                    )
+```
+    Fitting 5 folds for each of 72 candidates, totalling 360 fits
+    
+
+    [Parallel(n_jobs=56)]: Using backend LokyBackend with 56 concurrent workers.
+    [Parallel(n_jobs=56)]: Done  88 tasks      | elapsed:  6.6min
+    [Parallel(n_jobs=56)]: Done 360 out of 360 | elapsed: 24.0min finished
+    
+
+    Mean cross-validated score of the best_estimator: 0.975
+    Tuned parameters: {'RandomForest__bootstrap': True, 'RandomForest__class_weight': 'balanced', 'RandomForest__criterion': 'gini', 'RandomForest__max_depth': None, 'RandomForest__max_leaf_nodes': None, 'RandomForest__max_samples': None, 'RandomForest__min_impurity_decrease': 0, 'RandomForest__min_samples_leaf': 5, 'RandomForest__min_samples_split': 2, 'RandomForest__min_weight_fraction_leaf': 0, 'RandomForest__n_estimators': 500, 'RandomForest__oob_score': True}
+    F1-score: 0.9759
+    Precision: 0.9762
+    Recall: 0.9767
+    Accuracy on train data: 0.9967
+    Accuracy on test data: 0.9767
+    
+
+
+    
+![png](README.ipynb_files/README.ipynb_26_3.png)
+    
+
+
+    Wall time: 29min 22s
+    
 
 # TODO
 
 - Fine tuning
 - Compare models constructed on balanced / unbalanced dataset using different down-sampling/upsampling techniques.
-- Try ensembles (random forests) and boosting.
-
 
