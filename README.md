@@ -1,3 +1,22 @@
+# Contents
+
+__[1. Dataset](#DATASET)__  
+
+__[2. Exploratory data analysis  ](#EXPLORATORY-DATA-ANALYSIS)__  
+
+__[3. Model Selection](#MODEL-SELECTION)__  
+    [3.1. Individual machine learning models](#Individual-machine-learning-models)  
+    [3.2. Ensembles and boosting](#Ensembles-and-boosting)  
+    [3.2.1. XGBoost](#XGBoost)  
+    [3.2.2. Gradient boosting](#Gradient-boosting)  
+    [3.2.3. LightGBM](#LightGBM)  
+    [3.2.4. AdaBoost](#AdaBoost)  
+    [3.2.5. Random forests](#Random-forests)  
+    
+__[4. TO DO](#TODO)__  
+
+
+
 ```python
 import numpy as np 
 import pandas as pd 
@@ -66,6 +85,8 @@ X_test = test[test.columns[:-1]]
 y_test = test[test.columns[-1]]
 ```
 
+__[top](#Contents)__  
+
 # EXPLORATORY DATA ANALYSIS
 
 - The observations are skewed.
@@ -96,7 +117,7 @@ cls_df.get_summary(y=y_train,
     plot_boxplots=False)
 ```
 
-    NaNs: []
+    NaNs:  []
     Unique formats:  [dtype('float64')]
     Possible categorical variables (<10 unique values):  []
     Min value < 0:  []
@@ -110,9 +131,9 @@ cls_df.get_summary(y=y_train,
     Plotting distributions of variables against normal distribution
     
 
-
-        
-![png](README.ipynb_files/README.ipynb_6_2.png)
+   
+    
+![png](README_files/README_8_2.png)
     
 
 
@@ -135,7 +156,7 @@ plt.show()
 
 
     
-![png](README.ipynb_files/README.ipynb_8_0.png)
+![png](README_files/README_10_0.png)
     
 
 
@@ -164,9 +185,11 @@ plt.show()
 
 
     
-![png](README.ipynb_files/README.ipynb_10_0.png)
+![png](README_files/README_12_0.png)
     
 
+
+__[top](#Contents)__  
 
 # MODEL SELECTION  
 
@@ -235,7 +258,7 @@ best_model, allmodels = cls_models.classification_models(multiclass=True,
 
 
     
-![png](README.ipynb_files/README.ipynb_14_1.png)
+![png](README_files/README_17_1.png)
     
 
 
@@ -254,7 +277,7 @@ best_model, allmodels = cls_models.classification_models(multiclass=True,
 
 
     
-![png](README.ipynb_files/README.ipynb_14_3.png)
+![png](README_files/README_17_3.png)
     
 
 
@@ -273,7 +296,7 @@ best_model, allmodels = cls_models.classification_models(multiclass=True,
 
 
     
-![png](README.ipynb_files/README.ipynb_14_5.png)
+![png](README_files/README_17_5.png)
     
 
 
@@ -292,7 +315,7 @@ best_model, allmodels = cls_models.classification_models(multiclass=True,
 
 
     
-![png](README.ipynb_files/README.ipynb_14_7.png)
+![png](README_files/README_17_7.png)
     
 
 
@@ -311,7 +334,7 @@ best_model, allmodels = cls_models.classification_models(multiclass=True,
 
 
     
-![png](README.ipynb_files/README.ipynb_14_9.png)
+![png](README_files/README_17_9.png)
     
 
 
@@ -340,6 +363,8 @@ best_model, allmodels = cls_models.classification_models(multiclass=True,
 1. ___Model performance:___
     - SVM shows the best results among all tested models. However, confusion matrix shows that even it has problems with classifying labels 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat).
 
+
+__[top](#Contents)__  
 
 ## Ensembles and boosting
 
@@ -427,7 +452,7 @@ model_xgb = cls_models.checkmodel(
 
 
     
-![png](README.ipynb_files/README.ipynb_18_3.png)
+![png](README_files/README_21_3.png)
     
 
 
@@ -500,7 +525,7 @@ model_gb = cls_models.checkmodel(
 
 
     
-![png](README.ipynb_files/README.ipynb_20_3.png)
+![png](README_files/README_23_3.png)
     
 
 
@@ -561,6 +586,41 @@ model_lgbm = cls_models.checkmodel(
     [Parallel(n_jobs=56)]: Done  88 tasks      | elapsed:  5.7min
     [Parallel(n_jobs=56)]: Done 338 tasks      | elapsed: 36.3min
     [Parallel(n_jobs=56)]: Done 688 tasks      | elapsed: 72.6min
+    [Parallel(n_jobs=56)]: Done 1138 tasks      | elapsed: 119.9min
+    [Parallel(n_jobs=56)]: Done 1688 tasks      | elapsed: 151.9min
+    [Parallel(n_jobs=56)]: Done 2338 tasks      | elapsed: 226.0min
+    [Parallel(n_jobs=56)]: Done 3088 tasks      | elapsed: 292.5min
+    [Parallel(n_jobs=56)]: Done 3938 tasks      | elapsed: 366.3min
+    [Parallel(n_jobs=56)]: Done 4860 out of 4860 | elapsed: 435.9min finished
+    
+
+    [LightGBM] [Warning] seed is set=42, random_state=42 will be ignored. Current value: seed=42
+    Mean cross-validated score of the best_estimator: 0.984
+               Parameter Tuned value
+    0      boosting_type        gbdt
+    1       class_weight    balanced
+    2      learning_rate         0.1
+    3          max_depth          -1
+    4  min_child_samples          20
+    5       n_estimators         500
+    6         num_leaves          31
+    7          reg_alpha        0.03
+    8         reg_lambda           0
+    9          subsample           1
+    F1-score: 0.9849
+    Precision: 0.9849
+    Recall: 0.9852
+    Accuracy on train data: 1.0
+    Accuracy on test data: 0.9852
+    
+
+
+    
+![png](README_files/README_25_3.png)
+    
+
+
+    Wall time: 7h 16min 32s
     
 
 ### AdaBoost
@@ -632,7 +692,7 @@ model_ada = cls_models.checkmodel(
 
 
     
-![png](README.ipynb_files/README.ipynb_24_5.png)
+![png](README_files/README_27_5.png)
     
 
 
@@ -683,6 +743,7 @@ model_rf = cls_models.checkmodel(
                                     verbose=1
                                     )
 ```
+
     Fitting 5 folds for each of 72 candidates, totalling 360 fits
     
 
@@ -702,15 +763,18 @@ model_rf = cls_models.checkmodel(
 
 
     
-![png](README.ipynb_files/README.ipynb_26_3.png)
+![png](README_files/README_29_3.png)
     
 
 
     Wall time: 29min 22s
     
 
+__[top](#Contents)__  
+
 # TODO
 
 - Fine tuning
 - Compare models constructed on balanced / unbalanced dataset using different down-sampling/upsampling techniques.
 
+__[top](#Contents)__  
