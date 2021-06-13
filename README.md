@@ -795,8 +795,8 @@ __[top](#Contents)__
 | Gradient Boosting     | 0.9707   | 0.9709    | 0.9718  | 0.9718   |
 | Decision Trees        | 0.9545   | 0.9538    | 0.9559  | 0.9559   |
 | Logistic Regression   | 0.9027   | 0.9044    | 0.9152  | 0.9152   |
+| AdaBoost              | 0.8605   | 0.8462    | 0.8782  | 0.8782   |
 | Naive Bayes           | 0.1849   | 0.7952    | 0.1781  | 0.1781   |
-
 
 
 # TODO
