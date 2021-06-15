@@ -796,7 +796,7 @@ __[top](#Contents)__
 2. ___Model performance:___
     - Light GBM, XGBoost, SVM show the best results among all tested models. However, confusion matrices show that the models have problems with classifying labels 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat).
 
-# TODO
+# TO DO
 
 - Fine tuning
 - Compare models constructed on balanced / unbalanced dataset using different down-sampling/upsampling techniques.
