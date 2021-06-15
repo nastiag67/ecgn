@@ -356,16 +356,6 @@ best_model, allmodels = cls_models.classification_models(multiclass=True,
     2021-06-06 18:53:13
     
 
-#### Conclusions:
-
-1. ___Recall equals accuracy:___
-    - indicates that sensitivity (TPR) is equal to specificity (TNR), and thus they are also equal to accuracy. This means that the model's ability to correctly classify positive samples is same as its ability to correctly classify negative samples.
-
-
-2. ___Model performance:___
-    - SVM shows the best results among all tested models. However, confusion matrix shows that even it has problems with classifying labels 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat).
-
-
 __[top](#Contents)__  
 
 ## Ensembles and boosting
@@ -798,6 +788,13 @@ __[top](#Contents)__
 | AdaBoost              | 0.8605   | 0.8462    | 0.8782  | 0.8782   |
 | Naive Bayes           | 0.1849   | 0.7952    | 0.1781  | 0.1781   |
 
+
+1. ___Recall equals accuracy:___
+    - indicates that sensitivity (TPR) is equal to specificity (TNR), and thus they are also equal to accuracy. This means that the model's ability to correctly classify positive samples is same as its ability to correctly classify negative samples.
+
+
+2. ___Model performance:___
+    - Light GBM, XGBoost, SVM show the best results among all tested models. However, confusion matrices show that the models have problems with classifying labels 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat).
 
 # TODO
 
