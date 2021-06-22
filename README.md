@@ -6,6 +6,8 @@ __[2. Exploratory data analysis  ](#EXPLORATORY-DATA-ANALYSIS)__
 
 __[3. Model Selection](#MODEL-SELECTION)__  
     [3.1. Individual machine learning models](#Individual-machine-learning-models)  
+    [3.1.1. K-Nearest Neighbors](#K-Nearest-Neighbors)  
+    [3.1.2. SVM](#SVM)  
     [3.2. Ensembles and boosting](#Ensembles-and-boosting)  
     [3.2.1. XGBoost](#XGBoost)  
     [3.2.2. Gradient boosting](#Gradient-boosting)  
@@ -13,9 +15,12 @@ __[3. Model Selection](#MODEL-SELECTION)__
     [3.2.4. AdaBoost](#AdaBoost)  
     [3.2.5. Random forests](#Random-forests)  
     
-__[⁽ⁿᵉʷ⁾ 4. Results](#Summary-of-the-results)__  
+__[⁽ⁿᵉʷ⁾4. Resampling](#Resamling)__  
 
-__[5. TO DO](#TODO)__  
+__[⁽ⁿᵉʷ⁾5. Results](#Summary-of-the-results)__  
+
+__[6. TO DO](#TODO)__  
+
 
 
 ```python
@@ -131,10 +136,8 @@ cls_df.get_summary(y=y_train,
     Name: y, dtype: int64
     Plotting distributions of variables against normal distribution
     
-
-
     
-![png](README_files/README_8_2.png)
+![png](README_files/README_7_2.png)
     
 
 
@@ -157,7 +160,7 @@ plt.show()
 
 
     
-![png](README_files/README_10_0.png)
+![png](README_files/README_9_0.png)
     
 
 
@@ -186,7 +189,7 @@ plt.show()
 
 
     
-![png](README_files/README_12_0.png)
+![png](README_files/README_11_0.png)
     
 
 
@@ -199,7 +202,7 @@ Although the accuracy is pretty high (90%), recall is very low for some classes 
 
 So, we need to improve __recall__, the ability of a model to find all relevant cases within a dataset, while keeping the precision at an appropriate level.
 
-
+A __macro-average__ will compute the metric independently for each class and then take the average (hence treating all classes equally), whereas a __micro-average__ will aggregate the contributions of all classes to compute the average metric. Macro leads to a lower result since it doesn't account for the number of samples in the minority class.
 
 
 ```python
@@ -213,17 +216,12 @@ n_jobs=multiprocessing.cpu_count()  # 56
 #my package
 import tools as t
 reload(t)
-from tools.models import classification as c
+from tools.models import models as m
 
 # Create the pipeline
 from sklearn.preprocessing import StandardScaler
-steps = [
-#     ('scaler', StandardScaler()),
-#     ('scaler', RobustScaler()),
-#     ('pca', PCA(n_components=)),
-]
 
-cls_models = c.SimpleML(X_train, y_train, X_val, y_val)
+cls_models = m.Model(X_train, y_train, X_val, y_val)
 
 ```
 
@@ -233,126 +231,134 @@ cls_models = c.SimpleML(X_train, y_train, X_val, y_val)
 - Models which were compared: Naive Bayes, Logistic regression, SVM, kNN, Decision trees.
 - Best performing models based on recall: SVM, kNN, DT.
 
+__[top](#Contents)__  
+
+## K-Nearest Neighbors
+
 
 ```python
-best_model, allmodels = cls_models.classification_models(multiclass=True,
-                                                             steps=steps,
-                                                                     metric='recall',
-                                                                     average='weighted',
-                                                                     randomized_search=False, 
-                                                                     nfolds=5,
-                                                                     verbose=0,
-                                                                     n_jobs=n_jobs)
+%%time
+
+from sklearn.neighbors import KNeighborsClassifier
+name = 'KNN'
+model = KNeighborsClassifier(
+    n_jobs=56,
+)
+
+steps=[]
+
+parameters = {
+    'KNN__n_neighbors': np.arange(3, 8, 1),
+    'KNN__weights': ['uniform', 'distance'],
+    'KNN__p': [1, 2]
+}
+
+
+model_knn = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='macro',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=56,
+                                    verbose=1
+                                    )
+
 ```
 
-    2021-06-06 18:16:42
-    
-    ========== NB RESULT ==========
-    Mean cross-validated score of the best_estimator: 0.1719
-    Tuned parameters: {}
-    F1-score: 0.1849
-    Precision: 0.7952
-    Recall: 0.1781
-    Accuracy on train data: 0.1795
-    Accuracy on test data: 0.1781
-    
-
-
-    
-![png](README_files/README_17_1.png)
-    
-
-
-    [('NB', GaussianNB())]
-    []
-    
-    ========== LR RESULT ==========
-    Mean cross-validated score of the best_estimator: 0.9126
-    Tuned parameters: {'LR__class_weight': None, 'LR__multi_class': 'multinomial'}
-    F1-score: 0.9027
-    Precision: 0.9044
-    Recall: 0.9152
-    Accuracy on train data: 0.9145
-    Accuracy on test data: 0.9152
-    
-
-
-    
-![png](README_files/README_17_3.png)
-    
-
-
-    [('LR', LogisticRegression(max_iter=10000))]
-    []
-    
-    ========== SVM RESULT ==========
-    Mean cross-validated score of the best_estimator: 0.9803
-    Tuned parameters: {'SVM__C': 50, 'SVM__gamma': 0.1, 'SVM__kernel': 'rbf'}
-    F1-score: 0.9795
-    Precision: 0.9797
-    Recall: 0.9802
-    Accuracy on train data: 0.9917
-    Accuracy on test data: 0.9802
-    
-
-
-    
-![png](README_files/README_17_5.png)
-    
-
-
-    [('SVM', SVC())]
-    []
-    
-    ========== KNN RESULT ==========
-    Mean cross-validated score of the best_estimator: 0.9773
-    Tuned parameters: {'KNN__n_neighbors': 4, 'KNN__p': 1, 'KNN__weights': 'distance'}
-    F1-score: 0.9762
-    Precision: 0.9762
-    Recall: 0.9769
+    Fitting 5 folds for each of 20 candidates, totalling 100 fits
+    Mean cross-validated score of the best_estimator: 0.8466
+         Parameter Tuned value
+    0  n_neighbors           4
+    1            p           1
+    2      weights    distance
+    F1-score: 0.8893
+    Precision: 0.9254
+    Recall: 0.8596
     Accuracy on train data: 1.0
     Accuracy on test data: 0.9769
     
 
 
     
-![png](README_files/README_17_7.png)
+![png](README_files/README_16_1.png)
     
 
 
-    [('KNN', KNeighborsClassifier())]
-    []
+    Wall time: 17min 41s
     
-    ========== DT RESULT ==========
-    Mean cross-validated score of the best_estimator: 0.9542
-    Tuned parameters: {'DT__class_weight': None, 'DT__criterion': 'entropy', 'DT__max_depth': 14, 'DT__max_features': 'sqrt', 'DT__random_state': 42}
-    F1-score: 0.9545
-    Precision: 0.9538
-    Recall: 0.9559
-    Accuracy on train data: 0.9859
-    Accuracy on test data: 0.9559
+
+__[top](#Contents)__  
+
+## SVM
+
+
+```python
+%%time
+
+name = 'SVM'
+model = SVC()
+
+steps=[]
+
+parameters = {
+    'SVM__C': [1, 10, 50],
+    # Regularization - tells the SVM optimization how much error is bearable
+    # control the trade-off between decision boundary and misclassification term
+    # smaller value => small-margin hyperplane
+    # 'SVM__kernel': ['linear', 'poly', 'rbf', 'sigmoid'],  # VERY long pls don't
+    # 'SVM__degree': [3],
+    'SVM__gamma': [0.1, 0.5, 0.07, 'scale', 'auto'],  # scale
+    'SVM__class_weight': ['balanced'],  # None
+    }
+
+model_svm = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='weighted',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=56,
+                                    verbose=1
+                                    )
+
+```
+
+    Fitting 5 folds for each of 15 candidates, totalling 75 fits
+    
+
+    [Parallel(n_jobs=56)]: Using backend LokyBackend with 56 concurrent workers.
+    [Parallel(n_jobs=56)]: Done  40 out of  75 | elapsed: 56.7min remaining: 49.6min
+    [Parallel(n_jobs=56)]: Done  75 out of  75 | elapsed: 72.5min finished
+    
+
+    Mean cross-validated score of the best_estimator: 0.9803
+          Parameter Tuned value
+    0             C          50
+    1  class_weight    balanced
+    2         gamma         0.5
+    F1-score: 0.9804
+    Precision: 0.9803
+    Recall: 0.9807
+    Accuracy on train data: 0.9989
+    Accuracy on test data: 0.9807
     
 
 
     
-![png](README_files/README_17_9.png)
+![png](README_files/README_18_3.png)
     
 
 
-    [('DT', DecisionTreeClassifier())]
-    []
-    __________________________________________________
-    Best model: SVM
-    Tuned parameters: {'SVM__C': 50, 'SVM__gamma': 0.1, 'SVM__kernel': 'rbf'}
-    BEST recall: 0.9802
-    ==================================================
-         accuracy  precision  recall      f1
-    SVM    0.9802     0.9797  0.9802  0.9795
-    KNN    0.9769     0.9762  0.9769  0.9762
-    DT     0.9559     0.9538  0.9559  0.9545
-    LR     0.9152     0.9044  0.9152  0.9027
-    NB     0.1781     0.7952  0.1781  0.1849
-    2021-06-06 18:53:13
+    Wall time: 1h 23min 38s
     
 
 __[top](#Contents)__  
@@ -394,8 +400,6 @@ parameters = {
     'XGB__scale_pos_weight': [0.3, 0.7, 1],  # 1
     'XGB__predictor': ['cpu_predictor'],  # auto
     'XGB__num_parallel_tree': [1],  # 1
-
-#     n_jobs = n_jobs
 }
 # https://xgboost.readthedocs.io/en/latest/parameter.html#general-parameters
 
@@ -404,7 +408,7 @@ model_xgb = cls_models.checkmodel(
                                     model,
                                     steps=steps,
                                     parameters=parameters,
-                                    average='weighted',
+                                    average='macro',
                                     multiclass=True,
                                     metric='recall',
                                     randomized_search=False,
@@ -413,41 +417,38 @@ model_xgb = cls_models.checkmodel(
                                     verbose=1
                                     )
 
-# Wall time: 4min 16s
-# Wall time: 3min 5s
-# 
 ```
 
     Fitting 5 folds for each of 648 candidates, totalling 3240 fits
     
-
-    [Parallel(n_jobs=56)]: Using backend LokyBackend with 56 concurrent workers.
-    [Parallel(n_jobs=56)]: Done  88 tasks      | elapsed: 18.2min
-    [Parallel(n_jobs=56)]: Done 338 tasks      | elapsed: 102.6min
-    [Parallel(n_jobs=56)]: Done 688 tasks      | elapsed: 204.1min
-    [Parallel(n_jobs=56)]: Done 1138 tasks      | elapsed: 330.1min
-    [Parallel(n_jobs=56)]: Done 1688 tasks      | elapsed: 473.6min
-    [Parallel(n_jobs=56)]: Done 2338 tasks      | elapsed: 659.1min
-    [Parallel(n_jobs=56)]: Done 3088 tasks      | elapsed: 860.8min
-    [Parallel(n_jobs=56)]: Done 3240 out of 3240 | elapsed: 915.8min finished
-    
-
-    Mean cross-validated score of the best_estimator: 0.9805
-    Tuned parameters: {'XGB__alpha': 0, 'XGB__eta': 0.5, 'XGB__gamma': 0, 'XGB__lambda': 1, 'XGB__max_depth': 10, 'XGB__min_child_weight': 0.5, 'XGB__num_parallel_tree': 1, 'XGB__predictor': 'cpu_predictor', 'XGB__sampling_method': 'uniform', 'XGB__scale_pos_weight': 0.3, 'XGB__subsample': 0.7, 'XGB__tree_method': 'auto'}
-    F1-score: 0.9806
-    Precision: 0.9811
-    Recall: 0.9814
+    Mean cross-validated score of the best_estimator: 0.8518
+                Parameter    Tuned value
+    0               alpha              0
+    1                 eta            0.5
+    2               gamma              0
+    3              lambda              1
+    4           max_depth             10
+    5    min_child_weight            0.5
+    6   num_parallel_tree              1
+    7           predictor  cpu_predictor
+    8     sampling_method        uniform
+    9    scale_pos_weight            0.3
+    10          subsample            0.7
+    11        tree_method           auto
+    F1-score: 0.9095
+    Precision: 0.9625
+    Recall: 0.8681
     Accuracy on train data: 1.0
     Accuracy on test data: 0.9814
     
 
 
     
-![png](README_files/README_21_3.png)
+![png](README_files/README_20_3.png)
     
 
 
-    Wall time: 15h 16min 37s
+    Wall time: 15h 27min 11s
     
 
 __[top](#Contents)__  
@@ -481,12 +482,12 @@ parameters = {
     'GradientBoosting__n_iter_no_change': [5],  # 0
 }
 
-model_gb = cls_models.checkmodel(
+model_gb, y_pre_gb = cls_models.checkmodel(
                                     name,
                                     model,
                                     steps=steps,
                                     parameters=parameters,
-                                    average='weighted',
+                                    average='macro',
                                     multiclass=True,
                                     metric='recall',
                                     randomized_search=False,
@@ -494,35 +495,39 @@ model_gb = cls_models.checkmodel(
                                     n_jobs=56,
                                     verbose=1
                                     )
-# plt.savefig("learning.png", dpi=300, bbox_inches='tight')
 
 ```
 
     Fitting 5 folds for each of 108 candidates, totalling 540 fits
-    
-
-    [Parallel(n_jobs=56)]: Using backend LokyBackend with 56 concurrent workers.
-    [Parallel(n_jobs=56)]: Done  88 tasks      | elapsed: 37.4min
-    [Parallel(n_jobs=56)]: Done 338 tasks      | elapsed: 75.8min
-    [Parallel(n_jobs=56)]: Done 540 out of 540 | elapsed: 363.2min finished
-    
-
-    Mean cross-validated score of the best_estimator: 0.9682
-    Tuned parameters: {'GradientBoosting__criterion': 'friedman_mse', 'GradientBoosting__learning_rate': 0.1, 'GradientBoosting__loss': 'deviance', 'GradientBoosting__max_depth': 5, 'GradientBoosting__max_leaf_nodes': None, 'GradientBoosting__min_impurity_decrease': 0, 'GradientBoosting__min_samples_leaf': 1, 'GradientBoosting__min_samples_split': 2, 'GradientBoosting__min_weight_fraction_leaf': 0, 'GradientBoosting__n_estimators': 500, 'GradientBoosting__n_iter_no_change': 5, 'GradientBoosting__subsample': 1, 'GradientBoosting__validation_fraction': 0.1}
-    F1-score: 0.9707
-    Precision: 0.9709
-    Recall: 0.9718
-    Accuracy on train data: 0.9904
+    Mean cross-validated score of the best_estimator: 0.8
+                       Parameter   Tuned value
+    0                  criterion  friedman_mse
+    1              learning_rate           0.1
+    2                       loss      deviance
+    3                  max_depth             5
+    4             max_leaf_nodes          None
+    5      min_impurity_decrease             0
+    6           min_samples_leaf             1
+    7          min_samples_split             2
+    8   min_weight_fraction_leaf             0
+    9               n_estimators           500
+    10          n_iter_no_change             5
+    11                 subsample             1
+    12       validation_fraction           0.1
+    F1-score: 0.8581
+    Precision: 0.9073
+    Recall: 0.8192
+    Accuracy on train data: 0.9425
     Accuracy on test data: 0.9718
     
 
 
     
-![png](README_files/README_23_3.png)
+![png](README_files/README_22_1.png)
     
 
 
-    Wall time: 7h 7min 57s
+    Wall time: 7h 22min 49s
     
 
 __[top](#Contents)__  
@@ -539,7 +544,7 @@ model = lgb.LGBMClassifier(seed=42, random_state=42,
                          objective='multiclass', 
                          n_jobs=51
                          )
-
+ 
 steps=[]
 
 parameters = {
@@ -564,7 +569,7 @@ model_lgbm = cls_models.checkmodel(
                                     model,
                                     steps=steps,
                                     parameters=parameters,
-                                    average='weighted',
+                                    average='macro',
                                     multiclass=True,
                                     metric='recall',
                                     randomized_search=False,
@@ -575,47 +580,35 @@ model_lgbm = cls_models.checkmodel(
 ```
 
     Fitting 5 folds for each of 972 candidates, totalling 4860 fits
-    
-
-    [Parallel(n_jobs=56)]: Using backend LokyBackend with 56 concurrent workers.
-    [Parallel(n_jobs=56)]: Done  88 tasks      | elapsed:  5.7min
-    [Parallel(n_jobs=56)]: Done 338 tasks      | elapsed: 36.3min
-    [Parallel(n_jobs=56)]: Done 688 tasks      | elapsed: 72.6min
-    [Parallel(n_jobs=56)]: Done 1138 tasks      | elapsed: 119.9min
-    [Parallel(n_jobs=56)]: Done 1688 tasks      | elapsed: 151.9min
-    [Parallel(n_jobs=56)]: Done 2338 tasks      | elapsed: 226.0min
-    [Parallel(n_jobs=56)]: Done 3088 tasks      | elapsed: 292.5min
-    [Parallel(n_jobs=56)]: Done 3938 tasks      | elapsed: 366.3min
-    [Parallel(n_jobs=56)]: Done 4860 out of 4860 | elapsed: 435.9min finished
-    
-
     [LightGBM] [Warning] seed is set=42, random_state=42 will be ignored. Current value: seed=42
-    Mean cross-validated score of the best_estimator: 0.984
+    Mean cross-validated score of the best_estimator: 0.9091
                Parameter Tuned value
     0      boosting_type        gbdt
     1       class_weight    balanced
-    2      learning_rate         0.1
+    2      learning_rate        0.05
     3          max_depth          -1
     4  min_child_samples          20
-    5       n_estimators         500
+    5       n_estimators         100
     6         num_leaves          31
-    7          reg_alpha        0.03
+    7          reg_alpha        0.07
     8         reg_lambda           0
     9          subsample           1
-    F1-score: 0.9849
-    Precision: 0.9849
-    Recall: 0.9852
-    Accuracy on train data: 1.0
-    Accuracy on test data: 0.9852
+    17511
+    70043
+    F1-score: 0.8264
+    Precision: 0.7695
+    Recall: 0.9142
+    Accuracy on train data: 0.9869
+    Accuracy on test data: 0.9529
     
 
 
     
-![png](README_files/README_25_3.png)
+![png](README_files/README_24_1.png)
     
 
 
-    Wall time: 7h 16min 32s
+    Wall time: 7h 12min 32s
     
 
 __[top](#Contents)__  
@@ -625,7 +618,6 @@ __[top](#Contents)__
 
 ```python
 %%time
-from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
@@ -646,12 +638,12 @@ parameters = {
 #     'AdaBoost__algorithm': ['SAMME.R'],  # SAMME.R
 }
 
-model_ada = cls_models.checkmodel(
+model_ada, y_pred_ada = cls_models.checkmodel(
                                     name,
                                     model,
                                     steps=steps,
-                                    parameters=parameters,
-                                    average='weighted',
+                                    parameters=parameters,qwertu
+                                    average='macro',
                                     multiclass=True,
                                     metric='recall',
                                     randomized_search=False,
@@ -662,38 +654,27 @@ model_ada = cls_models.checkmodel(
 ```
 
     Fitting 5 folds for each of 9 candidates, totalling 45 fits
-    
-
-    [Parallel(n_jobs=45)]: Using backend LokyBackend with 45 concurrent workers.
-    [Parallel(n_jobs=45)]: Done   2 out of  45 | elapsed:  1.2min remaining: 24.8min
-    [Parallel(n_jobs=45)]: Done  45 out of  45 | elapsed:  8.7min finished
-    
-
-    Mean cross-validated score of the best_estimator: 0.8722
+    Mean cross-validated score of the best_estimator: 0.6226
             Parameter Tuned value
     0  base_estimator        None
-    1   learning_rate         0.5
-    2    n_estimators          50
-    
-
-    C:\ProgramData\Anaconda3\lib\site-packages\sklearn\metrics\_classification.py:1221: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
-      _warn_prf(average, modifier, msg_start, len(result))
-    
-
-    F1-score: 0.8605
-    Precision: 0.8462
-    Recall: 0.8782
-    Accuracy on train data: 0.8757
-    Accuracy on test data: 0.8782
+    1   learning_rate           1
+    2    n_estimators         500
+    17511
+    70043
+    F1-score: 0.4422
+    Precision: 0.4277
+    Recall: 0.6269
+    Accuracy on train data: 0.6349
+    Accuracy on test data: 0.5853
     
 
 
     
-![png](README_files/README_27_5.png)
+![png](README_files/README_26_1.png)
     
 
 
-    Wall time: 9min 37s
+    Wall time: 17min 52s
     
 
 __[top](#Contents)__  
@@ -725,7 +706,7 @@ parameters = {
     'RandomForest__bootstrap': [True],  # True
     'RandomForest__oob_score': [True],  # False - only if bootstrap=True
     'RandomForest__max_samples': [None],  # None - if bootstrap=True
-    'RandomForest__class_weight': [None, 'balanced', {0:0.1, 1:0.3, 2:0.1, 3:0.4, 4:0.1}],  # None
+    'RandomForest__class_weight': [None, 'balanced'],  # None
 }
 
 model_rf = cls_models.checkmodel(
@@ -733,7 +714,7 @@ model_rf = cls_models.checkmodel(
                                     model,
                                     steps=steps,
                                     parameters=parameters,
-                                    average='weighted',
+                                    average='macro',
                                     multiclass=True,
                                     metric='recall',
                                     randomized_search=False,
@@ -743,49 +724,110 @@ model_rf = cls_models.checkmodel(
                                     )
 ```
 
-    Fitting 5 folds for each of 72 candidates, totalling 360 fits
+    Fitting 5 folds for each of 48 candidates, totalling 240 fits
+    Mean cross-validated score of the best_estimator: 0.8682
+                       Parameter Tuned value
+    0                  bootstrap        True
+    1               class_weight    balanced
+    2                  criterion        gini
+    3                  max_depth          10
+    4             max_leaf_nodes        None
+    5                max_samples        None
+    6      min_impurity_decrease           0
+    7           min_samples_leaf           5
+    8          min_samples_split           2
+    9   min_weight_fraction_leaf           0
+    10              n_estimators         100
+    11                 oob_score        True
+    F1-score: 0.7957
+    Precision: 0.7701
+    Recall: 0.881
+    Accuracy on train data: 0.9494
+    Accuracy on test data: 0.9509
     
 
-    [Parallel(n_jobs=56)]: Using backend LokyBackend with 56 concurrent workers.
-    [Parallel(n_jobs=56)]: Done  88 tasks      | elapsed:  6.6min
-    [Parallel(n_jobs=56)]: Done 360 out of 360 | elapsed: 24.0min finished
-    
 
-    Mean cross-validated score of the best_estimator: 0.975
-    Tuned parameters: {'RandomForest__bootstrap': True, 'RandomForest__class_weight': 'balanced', 'RandomForest__criterion': 'gini', 'RandomForest__max_depth': None, 'RandomForest__max_leaf_nodes': None, 'RandomForest__max_samples': None, 'RandomForest__min_impurity_decrease': 0, 'RandomForest__min_samples_leaf': 5, 'RandomForest__min_samples_split': 2, 'RandomForest__min_weight_fraction_leaf': 0, 'RandomForest__n_estimators': 500, 'RandomForest__oob_score': True}
-    F1-score: 0.9759
-    Precision: 0.9762
-    Recall: 0.9767
-    Accuracy on train data: 0.9967
-    Accuracy on test data: 0.9767
+    
+![png](README_files/README_28_1.png)
     
 
 
-    
-![png](README_files/README_29_3.png)
+    Wall time: 25min 4s
     
 
+__[top](#Contents)__  
 
-    Wall time: 29min 22s
-    
+# Resamling  
+
+Approaches to solve problem of imbalanced dataset:
+- oversample the minority class
+- undersample the majority class
+
+__Problem with oversampling__: the idea is to duplicate some random examples from the minority class — thus this technique does not add any new information from the data.
+
+__Problem with undersampling__: conducted by removing some random examples from the majority class, at cost of some information in the original data are removed as well.
+
+One of the solutions to overcome that weakness is to generate new examples that are synthesized from the existing minority class: __Synthetic Minority Oversampling Technique (SMOTE)__. One of the variatons - __SMOTE-Tomek Links__.  
+
+SMOTE generates examples based on the __distance of each data__ (usually using Euclidean distance) and the minority class nearest neighbors, so the generated examples are different from the original minority class.
+
+The __process to generate the synthetic samples__:
+1.	Choose random data from the minority class.
+2.	Calculate the Euclidean distance between the random data and its k nearest neighbors.
+3.	Multiply the difference with a random number between 0 and 1, then add the result to the minority class as a synthetic sample.
+4.	Repeat the procedure until the desired proportion of minority class is met.
+
+This method is effective because the synthetic data that are generated are relatively close with the feature space on the minority class, thus adding new “information” on the data, unlike the original oversampling method.
+
+
+
+## SMOTE-Tomek Links Method
+
+
+```python
+
+```
+
+__[top](#Contents)__ 
+
+## SMOTE-ENN 
+
+
+```python
+from imblearn.over_sampling import RandomOverSampler
+ros = RandomOverSampler(random_state=42)
+X_train_r, y_train_r = ros.fit_resample(X_train, y_train)
+
+
+#my package
+import tools as t
+reload(t)
+from tools.models import models as m
+
+# Create the pipeline
+# from sklearn.preprocessing import StandardScaler
+steps = [
+#     ('scaler', StandardScaler()),
+#     ('scaler', RobustScaler()),
+#     ('pca', PCA(n_components=)),
+]
+
+cls_models = m.Model(X_train_r, y_train_r, X_val, y_val)
+
+```
 
 __[top](#Contents)__ 
 
 # Summary of the results
 
-
 | Model                 | F1 score | Precision | Recall  | Accuracy |
 |-----------------------|----------|-----------|---------|----------|
-| Light GBM             | 0.9849   | 0.9849    | 0.9852  | 0.9852   |
-| XGBoost               | 0.9806   | 0.9811    | 0.9814  | 0.9814   |
-| SVM                   | 0.9795   | 0.9797    | 0.9802  | 0.9802   |
-| kNN                   | 0.9762   | 0.9762    | 0.9769  | 0.9769   |
-| Random Forest         | 0.9759   | 0.9762    | 0.9767  | 0.9767   |
-| Gradient Boosting     | 0.9707   | 0.9709    | 0.9718  | 0.9718   |
-| Decision Trees        | 0.9545   | 0.9538    | 0.9559  | 0.9559   |
-| Logistic Regression   | 0.9027   | 0.9044    | 0.9152  | 0.9152   |
-| AdaBoost              | 0.8605   | 0.8462    | 0.8782  | 0.8782   |
-| Naive Bayes           | 0.1849   | 0.7952    | 0.1781  | 0.1781   |
+| Light GBM             | 0.8264   | 0.7695    | 0.9142  | 0.9529   |
+| Random Forest         | 0.7957   | 0.7701    | 0.8810  | 0.9509   |
+| XGBoost               | 0.9095   | 0.9625    | 0.8681  | 0.9814   |
+| kNN                   | 0.8893   | 0.9254    | 0.8596  | 0.9769   |
+| Gradient Boosting     | 0.8581   | 0.9073    | 0.8192  | 0.9718   |
+| AdaBoost	            | 0.4422   | 0.4277    | 0.6269  | 0.5853   |
 
 
 1. ___Recall equals accuracy:___
@@ -793,9 +835,12 @@ __[top](#Contents)__
 
 
 2. ___Model performance:___
-    - Light GBM, XGBoost, SVM show the best results among all tested models. However, confusion matrices show that the models have problems with classifying labels 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat).
+    - Light GBM, XGBoost, Random Forests, SVM show the best results among all tested models. However, confusion matrices show that the models have problems with classifying labels 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat).
+    - We use a macro-average which computes the metric independently for each class and then takes the average (hence treating all classes equally). Macro leads to a lower result since it doesn't account for the number of samples in the minority class.
 
-# TO DO
+__[top](#Contents)__  
+
+# TODO
 
 - Fine tuning
 - Compare models constructed on balanced / unbalanced dataset using different down-sampling/upsampling techniques.
