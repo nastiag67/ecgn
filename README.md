@@ -13,10 +13,9 @@ __[3. Model Selection](#MODEL-SELECTION)__
     [3.2.4. AdaBoost](#AdaBoost)  
     [3.2.5. Random forests](#Random-forests)  
     
-__[4. Results](#Summary-of-the-results)__  
+__[⁽ⁿᵉʷ⁾ 4. Results](#Summary-of-the-results)__  
 
 __[5. TO DO](#TODO)__  
-
 
 
 ```python
@@ -355,16 +354,6 @@ best_model, allmodels = cls_models.classification_models(multiclass=True,
     NB     0.1781     0.7952  0.1781  0.1849
     2021-06-06 18:53:13
     
-
-#### Conclusions:
-
-1. ___Recall equals accuracy:___
-    - indicates that sensitivity (TPR) is equal to specificity (TNR), and thus they are also equal to accuracy. This means that the model's ability to correctly classify positive samples is same as its ability to correctly classify negative samples.
-
-
-2. ___Model performance:___
-    - SVM shows the best results among all tested models. However, confusion matrix shows that even it has problems with classifying labels 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat).
-
 
 __[top](#Contents)__  
 
@@ -799,7 +788,14 @@ __[top](#Contents)__
 | Naive Bayes           | 0.1849   | 0.7952    | 0.1781  | 0.1781   |
 
 
-# TODO
+1. ___Recall equals accuracy:___
+    - indicates that sensitivity (TPR) is equal to specificity (TNR), and thus they are also equal to accuracy. This means that the model's ability to correctly classify positive samples is same as its ability to correctly classify negative samples.
+
+
+2. ___Model performance:___
+    - Light GBM, XGBoost, SVM show the best results among all tested models. However, confusion matrices show that the models have problems with classifying labels 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat).
+
+# TO DO
 
 - Fine tuning
 - Compare models constructed on balanced / unbalanced dataset using different down-sampling/upsampling techniques.
