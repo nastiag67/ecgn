@@ -17,7 +17,7 @@ __[3. Model Selection](#MODEL-SELECTION)__
     
 __[⁽ⁿᵉʷ⁾4. Resampling](#Resamling)__  
 
-__[⁽ⁿᵉʷ⁾5. Results](#Summary-of-the-results)__  
+__[5. Results](#Summary-of-the-results)__  
 
 __[6. TO DO](#TODO)__  
 
@@ -101,12 +101,22 @@ __[top](#Contents)__
 
 ```python
 from tools.preprocessing import eda
+
+cls_df = eda.Dataset(X_train)
+# cls_df.get_overview()
 ```
 
 
 ```python
-cls_df = eda.Dataset(X_train)
-# cls_df.get_overview()
+from tools.preprocessing import eda
+
+cls_df = eda.Dataset(train)
+train = cls_df.get_randomdata(n=10000)
+
+# training data
+X_train = train[train.columns[:-1]]
+y_train = train[train.columns[-1]]
+
 ```
 
 
@@ -136,6 +146,9 @@ cls_df.get_summary(y=y_train,
     Name: y, dtype: int64
     Plotting distributions of variables against normal distribution
     
+   
+
+
     
 ![png](README_files/README_7_2.png)
     
@@ -321,7 +334,7 @@ model_svm = cls_models.checkmodel(
                                     model,
                                     steps=steps,
                                     parameters=parameters,
-                                    average='weighted',
+                                    average='macro',
                                     multiclass=True,
                                     metric='recall',
                                     randomized_search=False,
@@ -333,32 +346,25 @@ model_svm = cls_models.checkmodel(
 ```
 
     Fitting 5 folds for each of 15 candidates, totalling 75 fits
-    
-
-    [Parallel(n_jobs=56)]: Using backend LokyBackend with 56 concurrent workers.
-    [Parallel(n_jobs=56)]: Done  40 out of  75 | elapsed: 56.7min remaining: 49.6min
-    [Parallel(n_jobs=56)]: Done  75 out of  75 | elapsed: 72.5min finished
-    
-
-    Mean cross-validated score of the best_estimator: 0.9803
+    Mean cross-validated score of the best_estimator: 0.9175
           Parameter Tuned value
-    0             C          50
+    0             C           1
     1  class_weight    balanced
     2         gamma         0.5
-    F1-score: 0.9804
-    Precision: 0.9803
-    Recall: 0.9807
-    Accuracy on train data: 0.9989
-    Accuracy on test data: 0.9807
+    F1-score: 0.8157
+    Precision: 0.7602
+    Recall: 0.9312
+    Accuracy on train data: 0.9867
+    Accuracy on test data: 0.9568
     
 
 
     
-![png](README_files/README_18_3.png)
+![png](README_files/README_18_1.png)
     
 
 
-    Wall time: 1h 23min 38s
+    Wall time: 1h 24min 50s
     
 
 __[top](#Contents)__  
@@ -401,7 +407,6 @@ parameters = {
     'XGB__predictor': ['cpu_predictor'],  # auto
     'XGB__num_parallel_tree': [1],  # 1
 }
-# https://xgboost.readthedocs.io/en/latest/parameter.html#general-parameters
 
 model_xgb = cls_models.checkmodel(
                                     name,
@@ -421,6 +426,8 @@ model_xgb = cls_models.checkmodel(
 
     Fitting 5 folds for each of 648 candidates, totalling 3240 fits
     
+    
+
     Mean cross-validated score of the best_estimator: 0.8518
                 Parameter    Tuned value
     0               alpha              0
@@ -755,6 +762,66 @@ model_rf = cls_models.checkmodel(
     Wall time: 25min 4s
     
 
+
+```python
+%%time
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
+from sklearn.tree import DecisionTreeClassifier
+
+name='AdaBoost'
+model = AdaBoostClassifier(random_state=42)
+
+steps=[]
+
+parameters = {
+    'AdaBoost__base_estimator': [None],  # None
+    'AdaBoost__n_estimators': [50, 200, 500],  # 50
+    'AdaBoost__learning_rate': [1, 0.05, 0.5],  # 1
+#     'AdaBoost__algorithm': ['SAMME.R'],  # SAMME.R
+}
+
+model_ada, y_pred_ada = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='macro',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=45,
+                                    verbose=1
+                                    )
+```
+
+    Fitting 5 folds for each of 9 candidates, totalling 45 fits
+    Mean cross-validated score of the best_estimator: 0.4802
+            Parameter Tuned value
+    0  base_estimator        None
+    1   learning_rate           1
+    2    n_estimators         500
+    F1-score: 0.3757
+    Precision: 0.3644
+    Recall: 0.5346
+    Accuracy on train data: 0.6121
+    Accuracy on test data: 0.5915
+    
+
+
+    
+![png](README_files/README_29_1.png)
+    
+
+
+    Wall time: 1min 49s
+    
+
 __[top](#Contents)__  
 
 # Resamling  
@@ -784,6 +851,138 @@ This method is effective because the synthetic data that are generated are relat
 ## SMOTE-Tomek Links Method
 
 
+
+```python
+from imblearn.under_sampling import TomekLinks
+from imblearn.combine import SMOTETomek
+
+```
+
+### SVM
+
+
+```python
+%%time
+
+name = 'SVM'
+model = SVC()
+
+resample=SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'))
+
+steps=[
+    ('r', resample),
+]
+
+parameters = {
+    'SVM__C': [1, 10, 50],
+    # Regularization - tells the SVM optimization how much error is bearable
+    # control the trade-off between decision boundary and misclassification term
+    # smaller value => small-margin hyperplane
+    # 'SVM__kernel': ['linear', 'poly', 'rbf', 'sigmoid'],  # VERY long pls don't
+    # 'SVM__degree': [3],
+    'SVM__gamma': [0.1, 0.5, 0.07, 'scale', 'auto'],  # scale
+    'SVM__class_weight': ['balanced'],  # None
+    }
+
+model_svm = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='macro',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=56,
+                                    verbose=2
+                                    )
+
+```
+
+    Fitting 5 folds for each of 15 candidates, totalling 75 fits
+    Mean cross-validated score of the best_estimator: 0.9108
+          Parameter Tuned value
+    0             C           1
+    1  class_weight    balanced
+    2         gamma         0.1
+    F1-score: 0.7758
+    Precision: 0.7182
+    Recall: 0.9227
+    Accuracy on train data: 0.9651
+    Accuracy on test data: 0.94
+    
+
+
+    
+![png](README_files/README_34_1.png)
+    
+
+
+    Wall time: 8h 21min 48s
+    
+
+__[top](#Contents)__  
+
+### LightGBM
+
+
+```python
+%%time
+import lightgbm as lgb
+
+name='LGBMClassifier'
+model = lgb.LGBMClassifier(seed=42, random_state=42,
+                         objective='multiclass', 
+                         n_jobs=51
+                         )
+ 
+resample=SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'))
+
+steps=[
+    ('r', resample),
+]
+
+parameters = {
+    'LGBMClassifier__boosting_type': ['gbdt'],  # 'gbdt'
+    'LGBMClassifier__num_leaves': [31],  # 31
+    'LGBMClassifier__max_depth': [-1, 10, 50],  # -1
+    'LGBMClassifier__learning_rate': [0.1, 0.05, 0.5],  # 0.1
+    'LGBMClassifier__n_estimators': [100, 500],  # 100
+#     'LGBMClassifier__subsample_for_bin': [200000],  # 200000
+    'LGBMClassifier__class_weight': [None, 'balanced', {0:0.1, 1:0.3, 2:0.1, 3:0.4, 4:0.1}],  # None
+#     'LGBMClassifier__min_split_gain': [0],  # 0
+#     'LGBMClassifier__min_child_weight': [1e-3],  # 1e-3
+    'LGBMClassifier__min_child_samples': [20],  # 20
+    'LGBMClassifier__subsample': [1, 0.7],  # 1
+#     'LGBMClassifier__colsample_bytree': [1],  # 1
+    'LGBMClassifier__reg_alpha': [0, 0.03, 0.07],  # 0
+    'LGBMClassifier__reg_lambda': [0, 0.03, 0.07],  # 0
+}
+
+model_lgbm, y_pred_lgbm = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='macro',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=56,
+                                    verbose=3
+                                    )
+```
+
+    Fitting 5 folds for each of 972 candidates, totalling 4860 fits
+    
+
+__[top](#Contents)__  
+
+### Random Forest
+
+
 ```python
 
 ```
@@ -794,25 +993,6 @@ __[top](#Contents)__
 
 
 ```python
-from imblearn.over_sampling import RandomOverSampler
-ros = RandomOverSampler(random_state=42)
-X_train_r, y_train_r = ros.fit_resample(X_train, y_train)
-
-
-#my package
-import tools as t
-reload(t)
-from tools.models import models as m
-
-# Create the pipeline
-# from sklearn.preprocessing import StandardScaler
-steps = [
-#     ('scaler', StandardScaler()),
-#     ('scaler', RobustScaler()),
-#     ('pca', PCA(n_components=)),
-]
-
-cls_models = m.Model(X_train_r, y_train_r, X_val, y_val)
 
 ```
 
@@ -820,8 +1000,11 @@ __[top](#Contents)__
 
 # Summary of the results
 
+- ___Model comparison___ 
+
 | Model                 | F1 score | Precision | Recall  | Accuracy |
 |-----------------------|----------|-----------|---------|----------|
+| SVM                   | 0.8157   | 0.7602    | 0.9312  | 0.9568   |
 | Light GBM             | 0.8264   | 0.7695    | 0.9142  | 0.9529   |
 | Random Forest         | 0.7957   | 0.7701    | 0.8810  | 0.9509   |
 | XGBoost               | 0.9095   | 0.9625    | 0.8681  | 0.9814   |
@@ -830,13 +1013,11 @@ __[top](#Contents)__
 | AdaBoost	            | 0.4422   | 0.4277    | 0.6269  | 0.5853   |
 
 
-1. ___Recall equals accuracy:___
-    - indicates that sensitivity (TPR) is equal to specificity (TNR), and thus they are also equal to accuracy. This means that the model's ability to correctly classify positive samples is same as its ability to correctly classify negative samples.
+- We use a ___macro-average___ which computes the metric independently for each class and then takes the average (hence treating all classes equally). Macro-average leads to a lower result since it doesn't account for the number of samples in the minority class.  
 
 
-2. ___Model performance:___
-    - Light GBM, XGBoost, Random Forests, SVM show the best results among all tested models. However, confusion matrices show that the models have problems with classifying labels 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat).
-    - We use a macro-average which computes the metric independently for each class and then takes the average (hence treating all classes equally). Macro leads to a lower result since it doesn't account for the number of samples in the minority class.
+- ___Model performance:___
+    - SVM, Light GBM, Random Forests, XGBoost show the best results among all tested models. However, confusion matrices show that the models have problems with classifying labels 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat).
 
 __[top](#Contents)__  
 
@@ -844,5 +1025,8 @@ __[top](#Contents)__
 
 - Fine tuning
 - Compare models constructed on balanced / unbalanced dataset using different down-sampling/upsampling techniques.
+- AUC for each class
+- Recall for each class
+- Precision-recall curve
 
 __[top](#Contents)__  
