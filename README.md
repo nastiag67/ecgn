@@ -1,7 +1,7 @@
 # Contents
 
 __[1. Dataset](#DATASET)__  
-
+a
 __[2. Exploratory data analysis  ](#EXPLORATORY-DATA-ANALYSIS)__  
 
 __[⁽ⁿᵉʷ⁾3. Model Selection](#MODEL-SELECTION)__  
@@ -21,10 +21,11 @@ __[4. Resampling](#Resamling)__
 
 __[⁽ⁿᵉʷ⁾5. Summary of the results](#Summary-of-the-results)__  
     [5.1. Metrics over all classes](#Metrics-over-all-classes)  
-    [⁽ⁿᵉʷ⁾5.2. Metrics per class (original dataset)](#Metrics-per-class-(original-dataset))  
-    [5.3. Metrics per class (resampled dataset)](#Metrics-per-class-(resampled-dataset))  
+    [⁽ⁿᵉʷ⁾5.2. Metrics per class: original dataset](#Metrics-per-class:-original-dataset)
+    [5.3. Metrics per class: resampled dataset](#Metrics-per-class:-resampled-dataset)
 
 __[6. TO DO](#TO-DO)__  
+
 
 
 ```python
