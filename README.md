@@ -4,7 +4,7 @@ __[1. Dataset](#DATASET)__
 
 __[2. Exploratory data analysis  ](#EXPLORATORY-DATA-ANALYSIS)__  
 
-__[3. Model Selection](#MODEL-SELECTION)__  
+__[⁽ⁿᵉʷ⁾3. Model Selection](#MODEL-SELECTION)__  
     [3.1. Individual machine learning models](#Individual-machine-learning-models)  
     [3.1.1. K-Nearest Neighbors](#K-Nearest-Neighbors)  
     [3.1.2. SVM](#SVM)  
@@ -15,9 +15,9 @@ __[3. Model Selection](#MODEL-SELECTION)__
     [3.2.4. AdaBoost](#AdaBoost)  
     [3.2.5. Random forests](#Random-forests)  
     
-__[⁽ⁿᵉʷ⁾4. Resampling](#Resamling)__  
+__[4. Resampling](#Resamling)__  
 
-__[5. Results](#Summary-of-the-results)__  
+__[⁽ⁿᵉʷ⁾5. Results](#Summary-of-the-results)__  
 
 __[6. TO DO](#TODO)__  
 
@@ -44,6 +44,9 @@ from sklearn import metrics
 from sklearn.metrics import jaccard_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import log_loss
+
+from imblearn.combine import SMOTEENN
+from imblearn.under_sampling import EditedNearestNeighbours
 
 # my packages
 import tools as t
@@ -146,7 +149,7 @@ cls_df.get_summary(y=y_train,
     Name: y, dtype: int64
     Plotting distributions of variables against normal distribution
     
-   
+    
 
 
     
@@ -267,7 +270,7 @@ parameters = {
 }
 
 
-model_knn = cls_models.checkmodel(
+model_knn, y_pred_knn = cls_models.checkmodel(
                                     name,
                                     model,
                                     steps=steps,
@@ -305,6 +308,51 @@ model_knn = cls_models.checkmodel(
     Wall time: 17min 41s
     
 
+
+```python
+from sklearn.metrics import classification_report
+from tools import utils as u
+from tools.models import metrics as m
+
+def calculate_metrics(model, name, X_test, y_test, y_train):
+
+    y_pred = model.predict(X_test)
+
+    a = classification_report(y_test, y_pred, labels=np.unique(y_train))
+    u.export_str(a, f"./classification_report_test/{name}.txt")
+    print(a)
+
+    m.plot_confusion_matrix(y_test=y_test.values,
+                            y_pred=y_pred,
+                            labels=np.unique(y_test),
+                            # labels=self.y_test.unique(),
+                            normalize=True,
+                            title=f'Confusion matrix for {name}',
+                            cmap=plt.cm.Blues)
+
+calculate_metrics(model_knn, 'KNN', X_test, y_test, y_train)
+```
+
+                  precision    recall  f1-score   support
+    
+             0.0       0.98      0.99      0.99     18118
+             1.0       0.88      0.67      0.76       556
+             2.0       0.95      0.92      0.93      1448
+             3.0       0.79      0.67      0.73       162
+             4.0       0.99      0.97      0.98      1608
+    
+        accuracy                           0.98     21892
+       macro avg       0.92      0.84      0.88     21892
+    weighted avg       0.98      0.98      0.98     21892
+    
+    
+
+
+    
+![png](README_files/README_17_1.png)
+    
+
+
 __[top](#Contents)__  
 
 ## SVM
@@ -329,7 +377,7 @@ parameters = {
     'SVM__class_weight': ['balanced'],  # None
     }
 
-model_svm = cls_models.checkmodel(
+model_svm, y_pred_svm = cls_models.checkmodel(
                                     name,
                                     model,
                                     steps=steps,
@@ -360,12 +408,57 @@ model_svm = cls_models.checkmodel(
 
 
     
-![png](README_files/README_18_1.png)
+![png](README_files/README_19_1.png)
     
 
 
     Wall time: 1h 24min 50s
     
+
+
+```python
+from sklearn.metrics import classification_report
+from tools import utils as u
+from tools.models import metrics as m
+
+def calculate_metrics(model, name, X_test, y_test, y_train):
+
+    y_pred = model.predict(X_test)
+
+    a = classification_report(y_test, y_pred, labels=np.unique(y_train))
+    u.export_str(a, f"./classification_report_test/{name}.txt")
+    print(a)
+
+    m.plot_confusion_matrix(y_test=y_test.values,
+                            y_pred=y_pred,
+                            labels=np.unique(y_test),
+                            # labels=self.y_test.unique(),
+                            normalize=True,
+                            title=f'Confusion matrix for {name}',
+                            cmap=plt.cm.Blues)
+
+calculate_metrics(model_svm[0], 'SVM', X_test, y_test, y_train)
+```
+
+                  precision    recall  f1-score   support
+    
+             0.0       0.99      0.96      0.97     18118
+             1.0       0.52      0.80      0.63       556
+             2.0       0.92      0.94      0.93      1448
+             3.0       0.36      0.90      0.51       162
+             4.0       0.98      0.98      0.98      1608
+    
+        accuracy                           0.95     21892
+       macro avg       0.75      0.91      0.80     21892
+    weighted avg       0.97      0.95      0.96     21892
+    
+    
+
+
+    
+![png](README_files/README_20_1.png)
+    
+
 
 __[top](#Contents)__  
 
@@ -403,12 +496,12 @@ parameters = {
     'XGB__lambda': [1],  # 1
     'XGB__alpha': [0],  # 0
     'XGB__tree_method': ['auto'],  # auto
-    'XGB__scale_pos_weight': [0.3, 0.7, 1],  # 1
+#     'XGB__scale_pos_weight': [0.3, 0.7, 1],  # 1
     'XGB__predictor': ['cpu_predictor'],  # auto
     'XGB__num_parallel_tree': [1],  # 1
 }
 
-model_xgb = cls_models.checkmodel(
+model_xgb, y_pred_xgb = cls_models.checkmodel(
                                     name,
                                     model,
                                     steps=steps,
@@ -426,8 +519,6 @@ model_xgb = cls_models.checkmodel(
 
     Fitting 5 folds for each of 648 candidates, totalling 3240 fits
     
-    
-
     Mean cross-validated score of the best_estimator: 0.8518
                 Parameter    Tuned value
     0               alpha              0
@@ -451,12 +542,57 @@ model_xgb = cls_models.checkmodel(
 
 
     
-![png](README_files/README_20_3.png)
+![png](README_files/README_22_3.png)
     
 
 
     Wall time: 15h 27min 11s
     
+
+
+```python
+from sklearn.metrics import classification_report
+from tools import utils as u
+from tools.models import metrics as m
+
+def calculate_metrics(model, name, X_test, y_test, y_train):
+
+    y_pred = model.predict(X_test)
+
+    a = classification_report(y_test, y_pred, labels=np.unique(y_train))
+    u.export_str(a, f"./classification_report_test/{name}.txt")
+    print(a)
+
+    m.plot_confusion_matrix(y_test=y_test.values,
+                            y_pred=y_pred,
+                            labels=np.unique(y_test),
+                            # labels=self.y_test.unique(),
+                            normalize=True,
+                            title=f'Confusion matrix for {name}',
+                            cmap=plt.cm.Blues)
+
+calculate_metrics(model_xgb[0], 'XGBoost', X_test, y_test, y_train)
+```
+
+                  precision    recall  f1-score   support
+    
+             0.0       0.98      1.00      0.99     18118
+             1.0       0.97      0.67      0.79       556
+             2.0       0.97      0.92      0.95      1448
+             3.0       0.87      0.69      0.77       162
+             4.0       0.99      0.97      0.98      1608
+    
+        accuracy                           0.98     21892
+       macro avg       0.96      0.85      0.90     21892
+    weighted avg       0.98      0.98      0.98     21892
+    
+    
+
+
+    
+![png](README_files/README_23_1.png)
+    
+
 
 __[top](#Contents)__  
 
@@ -530,7 +666,7 @@ model_gb, y_pre_gb = cls_models.checkmodel(
 
 
     
-![png](README_files/README_22_1.png)
+![png](README_files/README_25_1.png)
     
 
 
@@ -549,7 +685,7 @@ import lightgbm as lgb
 name='LGBMClassifier'
 model = lgb.LGBMClassifier(seed=42, random_state=42,
                          objective='multiclass', 
-                         n_jobs=51
+#                          n_jobs=51
                          )
  
 steps=[]
@@ -571,7 +707,7 @@ parameters = {
     'LGBMClassifier__reg_lambda': [0, 0.03, 0.07],  # 0
 }
 
-model_lgbm = cls_models.checkmodel(
+model_lgbm, y_pred_lgbm = cls_models.checkmodel(
                                     name,
                                     model,
                                     steps=steps,
@@ -611,12 +747,57 @@ model_lgbm = cls_models.checkmodel(
 
 
     
-![png](README_files/README_24_1.png)
+![png](README_files/README_27_1.png)
     
 
 
     Wall time: 7h 12min 32s
     
+
+
+```python
+from sklearn.metrics import classification_report
+from tools import utils as u
+from tools.models import metrics as m
+
+def calculate_metrics(model, name, X_test, y_test, y_train):
+
+    y_pred = model.predict(X_test)
+
+    a = classification_report(y_test, y_pred, labels=np.unique(y_train))
+    u.export_str(a, f"./classification_report_test/{name}.txt")
+    print(a)
+
+    m.plot_confusion_matrix(y_test=y_test.values,
+                            y_pred=y_pred,
+                            labels=np.unique(y_test),
+                            # labels=self.y_test.unique(),
+                            normalize=True,
+                            title=f'Confusion matrix for {name}',
+                            cmap=plt.cm.Blues)
+
+calculate_metrics(model_lgbm[0], 'Light GBM', X_test, y_test, y_train)
+```
+
+                  precision    recall  f1-score   support
+    
+             0.0       0.99      0.95      0.97     18118
+             1.0       0.50      0.82      0.62       556
+             2.0       0.86      0.95      0.90      1448
+             3.0       0.46      0.85      0.59       162
+             4.0       0.95      0.98      0.96      1608
+    
+        accuracy                           0.95     21892
+       macro avg       0.75      0.91      0.81     21892
+    weighted avg       0.96      0.95      0.95     21892
+    
+    
+
+
+    
+![png](README_files/README_28_1.png)
+    
+
 
 __[top](#Contents)__  
 
@@ -649,7 +830,7 @@ model_ada, y_pred_ada = cls_models.checkmodel(
                                     name,
                                     model,
                                     steps=steps,
-                                    parameters=parameters,qwertu
+                                    parameters=parameters,
                                     average='macro',
                                     multiclass=True,
                                     metric='recall',
@@ -677,12 +858,57 @@ model_ada, y_pred_ada = cls_models.checkmodel(
 
 
     
-![png](README_files/README_26_1.png)
+![png](README_files/README_30_1.png)
     
 
 
     Wall time: 17min 52s
     
+
+
+```python
+from sklearn.metrics import classification_report
+from tools import utils as u
+from tools.models import metrics as m
+
+def calculate_metrics(model, name, X_test, y_test, y_train):
+
+    y_pred = model.predict(X_test)
+
+    a = classification_report(y_test, y_pred, labels=np.unique(y_train))
+    u.export_str(a, f"./classification_report_test/{name}.txt")
+    print(a)
+
+    m.plot_confusion_matrix(y_test=y_test.values,
+                            y_pred=y_pred,
+                            labels=np.unique(y_test),
+                            # labels=self.y_test.unique(),
+                            normalize=True,
+                            title=f'Confusion matrix for {name}',
+                            cmap=plt.cm.Blues)
+
+calculate_metrics(model_ada, 'AdaBoost', X_test, y_test, y_train)
+```
+
+                  precision    recall  f1-score   support
+    
+             0.0       0.96      0.57      0.71     18118
+             1.0       0.06      0.55      0.11       556
+             2.0       0.31      0.74      0.44      1448
+             3.0       0.12      0.40      0.19       162
+             4.0       0.70      0.88      0.78      1608
+    
+        accuracy                           0.60     21892
+       macro avg       0.43      0.63      0.44     21892
+    weighted avg       0.87      0.60      0.68     21892
+    
+    
+
+
+    
+![png](README_files/README_31_1.png)
+    
+
 
 __[top](#Contents)__  
 
@@ -716,7 +942,7 @@ parameters = {
     'RandomForest__class_weight': [None, 'balanced'],  # None
 }
 
-model_rf = cls_models.checkmodel(
+model_rf, y_pred_rf = cls_models.checkmodel(
                                     name,
                                     model,
                                     steps=steps,
@@ -755,71 +981,11 @@ model_rf = cls_models.checkmodel(
 
 
     
-![png](README_files/README_28_1.png)
+![png](README_files/README_33_1.png)
     
 
 
     Wall time: 25min 4s
-    
-
-
-```python
-%%time
-from sklearn.ensemble import AdaBoostClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.naive_bayes import GaussianNB
-from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
-from sklearn.tree import DecisionTreeClassifier
-
-name='AdaBoost'
-model = AdaBoostClassifier(random_state=42)
-
-steps=[]
-
-parameters = {
-    'AdaBoost__base_estimator': [None],  # None
-    'AdaBoost__n_estimators': [50, 200, 500],  # 50
-    'AdaBoost__learning_rate': [1, 0.05, 0.5],  # 1
-#     'AdaBoost__algorithm': ['SAMME.R'],  # SAMME.R
-}
-
-model_ada, y_pred_ada = cls_models.checkmodel(
-                                    name,
-                                    model,
-                                    steps=steps,
-                                    parameters=parameters,
-                                    average='macro',
-                                    multiclass=True,
-                                    metric='recall',
-                                    randomized_search=False,
-                                    nfolds=5,
-                                    n_jobs=45,
-                                    verbose=1
-                                    )
-```
-
-    Fitting 5 folds for each of 9 candidates, totalling 45 fits
-    Mean cross-validated score of the best_estimator: 0.4802
-            Parameter Tuned value
-    0  base_estimator        None
-    1   learning_rate           1
-    2    n_estimators         500
-    F1-score: 0.3757
-    Precision: 0.3644
-    Recall: 0.5346
-    Accuracy on train data: 0.6121
-    Accuracy on test data: 0.5915
-    
-
-
-    
-![png](README_files/README_29_1.png)
-    
-
-
-    Wall time: 1min 49s
     
 
 __[top](#Contents)__  
@@ -847,6 +1013,12 @@ The __process to generate the synthetic samples__:
 This method is effective because the synthetic data that are generated are relatively close with the feature space on the minority class, thus adding new “information” on the data, unlike the original oversampling method.
 
 
+
+
+```python
+resample=SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'))
+
+```
 
 ## SMOTE-Tomek Links Method
 
@@ -915,7 +1087,7 @@ model_svm = cls_models.checkmodel(
 
 
     
-![png](README_files/README_34_1.png)
+![png](README_files/README_39_1.png)
     
 
 
@@ -991,8 +1163,68 @@ __[top](#Contents)__
 
 ## SMOTE-ENN 
 
+Developed by Batista et al (2004), this method combines the SMOTE ability to generate synthetic examples for minority class and ENN ability to delete some observations from both classes that are identified as having different class between the observation’s class and its K-nearest neighbor majority class. The process of SMOTE-ENN can be explained as follows.
+1.	(Start of SMOTE) Choose random data from the minority class.
+2.	Calculate the distance between the random data and its k nearest neighbors.
+3.	Multiply the difference with a random number between 0 and 1, then add the result to the minority class as a synthetic sample.
+4.	Repeat step number 2–3 until the desired proportion of minority class is met. (End of SMOTE)
+5.	(Start of ENN) Determine K, as the number of nearest neighbors. If not determined, then K=3.
+6.	Find the K-nearest neighbor of the observation among the other observations in the dataset, then return the majority class from the K-nearest neighbor.
+7.	If the class of the observation and the majority class from the observation’s K-nearest neighbor is different, then the observation and its K-nearest neighbor are deleted from the dataset.
+8.	Repeat step 2 and 3 until the desired proportion of each class is fulfilled. (End of ENN)
+
+
 
 ```python
+resample=SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='all'))
+X, y = resample.fit_resample(X_train, y_train)
+X.info()
+```
+
+    <class 'pandas.core.frame.DataFrame'>
+    RangeIndex: 286403 entries, 0 to 286402
+    Columns: 187 entries, 0 to 186
+    dtypes: float64(187)
+    memory usage: 408.6 MB
+    
+
+
+```python
+%%time
+
+name = 'SVM'
+model = SVC()
+
+resample=SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='all'))
+
+steps=[
+    ('r', resample),
+]
+
+parameters = {
+    'SVM__C': [1, 10, 50],
+    # Regularization - tells the SVM optimization how much error is bearable
+    # control the trade-off between decision boundary and misclassification term
+    # smaller value => small-margin hyperplane
+    # 'SVM__kernel': ['linear', 'poly', 'rbf', 'sigmoid'],  # VERY long pls don't
+    # 'SVM__degree': [3],
+    'SVM__gamma': [0.1, 0.5, 0.07, 'scale', 'auto'],  # scale
+    'SVM__class_weight': ['balanced'],  # None
+    }
+
+model_svm = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='macro',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=56,
+                                    verbose=2
+                                    )
 
 ```
 
@@ -1000,7 +1232,7 @@ __[top](#Contents)__
 
 # Summary of the results
 
-- ___Model comparison___ 
+## Metrics over all classes
 
 | Model                 | F1 score | Precision | Recall  | Accuracy |
 |-----------------------|----------|-----------|---------|----------|
@@ -1019,9 +1251,168 @@ __[top](#Contents)__
 - ___Model performance:___
     - SVM, Light GBM, Random Forests, XGBoost show the best results among all tested models. However, confusion matrices show that the models have problems with classifying labels 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat).
 
+## Metrics per class
+
+- __SVM__ 
+    - validation
+
+                          precision    recall  f1-score   support
+                     0.0       0.99      0.96      0.98     14579
+                     1.0       0.55      0.86      0.67       426
+                     2.0       0.91      0.94      0.92      1112
+                     3.0       0.36      0.90      0.52       145
+                     4.0       0.98      0.99      0.99      1249
+             
+                accuracy                           0.96     17511
+               macro avg       0.76      0.93      0.82     17511
+            weighted avg       0.97      0.96      0.96     17511
+            
+    - testing
+                          precision    recall  f1-score   support
+                     0.0       0.99      0.96      0.97     18118
+                     1.0       0.52      0.80      0.63       556
+                     2.0       0.92      0.94      0.93      1448
+                     3.0       0.36      0.90      0.51       162
+                     4.0       0.98      0.98      0.98      1608
+             
+                accuracy                           0.95     21892
+               macro avg       0.75      0.91      0.80     21892
+            weighted avg       0.97      0.95      0.96     21892
+
+
+- __Light GBM__
+    - validation
+                          precision    recall  f1-score   support
+                     0.0       0.99      0.96      0.97     14579
+                     1.0       0.52      0.85      0.64       426
+                     2.0       0.85      0.94      0.89      1112
+                     3.0       0.54      0.84      0.66       145
+                     4.0       0.95      0.98      0.96      1249
+             
+                accuracy                           0.95     17511
+               macro avg       0.77      0.91      0.83     17511
+            weighted avg       0.96      0.95      0.96     17511
+            
+    - testing
+                          precision    recall  f1-score   support
+                     0.0       0.99      0.95      0.97     18118
+                     1.0       0.50      0.82      0.62       556
+                     2.0       0.86      0.95      0.90      1448
+                     3.0       0.46      0.85      0.59       162
+                     4.0       0.95      0.98      0.96      1608
+             
+                accuracy                           0.95     21892
+               macro avg       0.75      0.91      0.81     21892
+            weighted avg       0.96      0.95      0.95     21892
+
+
+- __Random Forest__
+    - validation
+    - testing
+
+
+- __XGBoost__
+    - validaton
+                          precision    recall  f1-score   support
+                     0.0       0.98      1.00      0.99     14579
+                     1.0       0.96      0.70      0.81       426
+                     2.0       0.96      0.92      0.94      1112
+                     3.0       0.92      0.74      0.82       145
+                     4.0       0.99      0.98      0.98      1249
+             
+                accuracy                           0.98     17511
+               macro avg       0.96      0.87      0.91     17511
+            weighted avg       0.98      0.98      0.98     17511     
+            
+    - testing
+                          precision    recall  f1-score   support
+                     0.0       0.98      1.00      0.99     18118
+                     1.0       0.97      0.67      0.79       556
+                     2.0       0.97      0.92      0.95      1448
+                     3.0       0.87      0.69      0.77       162
+                     4.0       0.99      0.97      0.98      1608
+             
+                accuracy                           0.98     21892
+               macro avg       0.96      0.85      0.90     21892
+            weighted avg       0.98      0.98      0.98     21892
+
+
+- __KNN__
+    - validation
+                          precision    recall  f1-score   support
+                     0.0       0.98      0.99      0.99     14579
+                     1.0       0.89      0.69      0.78       426
+                     2.0       0.93      0.90      0.92      1112
+                     3.0       0.83      0.73      0.78       145
+                     4.0       0.99      0.98      0.98      1249
+             
+                accuracy                           0.98     17511
+               macro avg       0.93      0.86      0.89     17511
+            weighted avg       0.98      0.98      0.98     17511
+            
+    - testing
+                          precision    recall  f1-score   support
+                     0.0       0.98      0.99      0.99     18118
+                     1.0       0.88      0.67      0.76       556
+                     2.0       0.95      0.92      0.93      1448
+                     3.0       0.79      0.67      0.73       162
+                     4.0       0.99      0.97      0.98      1608
+    
+                accuracy                           0.98     21892
+               macro avg       0.92      0.84      0.88     21892
+            weighted avg       0.98      0.98      0.98     21892
+
+
+- __Gradient Boosting__
+
+
+- __AdaBoost__   
+    - validation
+                          precision    recall  f1-score   support
+                     0.0       0.95      0.55      0.70     14579
+                     1.0       0.05      0.53      0.10       426
+                     2.0       0.28      0.70      0.40      1112
+                     3.0       0.16      0.46      0.23       145
+                     4.0       0.69      0.89      0.78      1249
+             
+                accuracy                           0.59     17511
+               macro avg       0.43      0.63      0.44     17511
+            weighted avg       0.86      0.59      0.67     17511         
+             
+    - testing
+                          precision    recall  f1-score   support
+                     0.0       0.96      0.57      0.71     18118
+                     1.0       0.06      0.55      0.11       556
+                     2.0       0.31      0.74      0.44      1448
+                     3.0       0.12      0.40      0.19       162
+                     4.0       0.70      0.88      0.78      1608
+
+                accuracy                           0.60     21892
+               macro avg       0.43      0.63      0.44     21892
+            weighted avg       0.87      0.60      0.68     21892
+
+
+
+<!-- |               | Precision | Recall  | f1-score | Support |
+|---------------|----------|----------|----------|---------|
+|    accuracy   |          |          |    0.95  |   17511 |
+|   macro avg   |    0.77  |    0.91  |    0.83  |   17511 |
+|weighted avg   |    0.96  |    0.95  |    0.96  |   17511 |
+ -->
+
+
+
+
+
+<!-- labels = ['0 (N - Normal beat)',
+          '1 (S - Supraventricular premature beat)',
+          '2 (V - Premature ventricular contraction)',
+          '3 (F - Fusion of ventricular and normal beat)',
+          '4 (Q - Unclassifiable beat)'] -->
+
 __[top](#Contents)__  
 
-# TODO
+# TO DO
 
 - Fine tuning
 - Compare models constructed on balanced / unbalanced dataset using different down-sampling/upsampling techniques.
