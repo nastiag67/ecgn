@@ -16,10 +16,15 @@ __[⁽ⁿᵉʷ⁾3. Model Selection](#MODEL-SELECTION)__
     [3.2.5. Random forests](#Random-forests)  
     
 __[4. Resampling](#Resamling)__  
+    [4.1. SMOTE-Tomek Links Method](#SMOTE-Tomek-Links-Method)  
+    [4.2. SMOTE-ENN Method](#SMOTE-ENN-Method)  
 
-__[⁽ⁿᵉʷ⁾5. Results](#Summary-of-the-results)__  
+__[⁽ⁿᵉʷ⁾5. Summary of the results](#Summary-of-the-results)__  
+    [5.1. Metrics over all classes](#Metrics-over-all-classes)  
+    [⁽ⁿᵉʷ⁾5.2. Metrics per class (original dataset)](#Metrics-per-class-(original-dataset))  
+    [5.3. Metrics per class (resampled dataset)](#Metrics-per-class-(resampled-dataset))  
 
-__[6. TO DO](#TODO)__  
+__[6. TO DO](#TO-DO)__  
 
 
 
@@ -72,14 +77,13 @@ __Task:__ multiclass classification
 
 ```python
 import os
-for dirname, _, filenames in os.walk('/data'):
+for dirname, _, filenames in os.walk('../data'):
     for filename in filenames:
         print(os.path.join(dirname, filename))
-
         
 # mitbih data
-df_train = pd.read_csv('data/mitbih_train.csv', header=None)
-df_test = pd.read_csv('data/mitbih_test.csv', header=None)
+df_train = pd.read_csv('../data/mitbih_train.csv', header=None)
+df_test = pd.read_csv('../data/mitbih_test.csv', header=None)
 
 # combined df
 train = df_train.rename(columns={187:'y'})
@@ -149,8 +153,6 @@ cls_df.get_summary(y=y_train,
     Name: y, dtype: int64
     Plotting distributions of variables against normal distribution
     
-    
-
 
     
 ![png](README_files/README_7_2.png)
@@ -233,6 +235,8 @@ n_jobs=multiprocessing.cpu_count()  # 56
 import tools as t
 reload(t)
 from tools.models import models as m
+from tools.models import metrics as mt
+reload(mt)
 
 # Create the pipeline
 from sklearn.preprocessing import StandardScaler
@@ -310,27 +314,8 @@ model_knn, y_pred_knn = cls_models.checkmodel(
 
 
 ```python
-from sklearn.metrics import classification_report
-from tools import utils as u
-from tools.models import metrics as m
-
-def calculate_metrics(model, name, X_test, y_test, y_train):
-
-    y_pred = model.predict(X_test)
-
-    a = classification_report(y_test, y_pred, labels=np.unique(y_train))
-    u.export_str(a, f"./classification_report_test/{name}.txt")
-    print(a)
-
-    m.plot_confusion_matrix(y_test=y_test.values,
-                            y_pred=y_pred,
-                            labels=np.unique(y_test),
-                            # labels=self.y_test.unique(),
-                            normalize=True,
-                            title=f'Confusion matrix for {name}',
-                            cmap=plt.cm.Blues)
-
-calculate_metrics(model_knn, 'KNN', X_test, y_test, y_train)
+# check the metrics on testing dataset
+mt.metrics_report(model_knn, 'KNN', X_test, y_test, y_train, data='test')
 ```
 
                   precision    recall  f1-score   support
@@ -417,27 +402,8 @@ model_svm, y_pred_svm = cls_models.checkmodel(
 
 
 ```python
-from sklearn.metrics import classification_report
-from tools import utils as u
-from tools.models import metrics as m
-
-def calculate_metrics(model, name, X_test, y_test, y_train):
-
-    y_pred = model.predict(X_test)
-
-    a = classification_report(y_test, y_pred, labels=np.unique(y_train))
-    u.export_str(a, f"./classification_report_test/{name}.txt")
-    print(a)
-
-    m.plot_confusion_matrix(y_test=y_test.values,
-                            y_pred=y_pred,
-                            labels=np.unique(y_test),
-                            # labels=self.y_test.unique(),
-                            normalize=True,
-                            title=f'Confusion matrix for {name}',
-                            cmap=plt.cm.Blues)
-
-calculate_metrics(model_svm[0], 'SVM', X_test, y_test, y_train)
+# check the metrics on testing dataset
+mt.metrics_report(model_svm[0], 'SVM', X_test, y_test, y_train, data='test')
 ```
 
                   precision    recall  f1-score   support
@@ -519,6 +485,7 @@ model_xgb, y_pred_xgb = cls_models.checkmodel(
 
     Fitting 5 folds for each of 648 candidates, totalling 3240 fits
     
+
     Mean cross-validated score of the best_estimator: 0.8518
                 Parameter    Tuned value
     0               alpha              0
@@ -551,27 +518,8 @@ model_xgb, y_pred_xgb = cls_models.checkmodel(
 
 
 ```python
-from sklearn.metrics import classification_report
-from tools import utils as u
-from tools.models import metrics as m
-
-def calculate_metrics(model, name, X_test, y_test, y_train):
-
-    y_pred = model.predict(X_test)
-
-    a = classification_report(y_test, y_pred, labels=np.unique(y_train))
-    u.export_str(a, f"./classification_report_test/{name}.txt")
-    print(a)
-
-    m.plot_confusion_matrix(y_test=y_test.values,
-                            y_pred=y_pred,
-                            labels=np.unique(y_test),
-                            # labels=self.y_test.unique(),
-                            normalize=True,
-                            title=f'Confusion matrix for {name}',
-                            cmap=plt.cm.Blues)
-
-calculate_metrics(model_xgb[0], 'XGBoost', X_test, y_test, y_train)
+# check the metrics on testing dataset
+mt.metrics_report(model_xgb[0], 'XGBoost', X_test, y_test, y_train, data='test')
 ```
 
                   precision    recall  f1-score   support
@@ -596,7 +544,7 @@ calculate_metrics(model_xgb[0], 'XGBoost', X_test, y_test, y_train)
 
 __[top](#Contents)__  
 
-### Gradient boosting
+### Gradient Boosting
 
 
 ```python
@@ -673,6 +621,32 @@ model_gb, y_pre_gb = cls_models.checkmodel(
     Wall time: 7h 22min 49s
     
 
+
+```python
+# check the metrics on testing dataset
+mt.metrics_report(model_gb, 'GradientBoost', X_test, y_test, y_train, data='test')
+```
+
+                  precision    recall  f1-score   support
+    
+             0.0       0.97      0.99      0.98     18118
+             1.0       0.88      0.61      0.72       556
+             2.0       0.95      0.86      0.91      1448
+             3.0       0.61      0.62      0.61       162
+             4.0       0.99      0.95      0.97      1608
+    
+        accuracy                           0.97     21892
+       macro avg       0.88      0.81      0.84     21892
+    weighted avg       0.97      0.97      0.97     21892
+    
+    
+
+
+    
+![png](README_files/README_26_1.png)
+    
+
+
 __[top](#Contents)__  
 
 ### LightGBM
@@ -747,7 +721,7 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
 
 
     
-![png](README_files/README_27_1.png)
+![png](README_files/README_28_1.png)
     
 
 
@@ -756,27 +730,8 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
 
 
 ```python
-from sklearn.metrics import classification_report
-from tools import utils as u
-from tools.models import metrics as m
-
-def calculate_metrics(model, name, X_test, y_test, y_train):
-
-    y_pred = model.predict(X_test)
-
-    a = classification_report(y_test, y_pred, labels=np.unique(y_train))
-    u.export_str(a, f"./classification_report_test/{name}.txt")
-    print(a)
-
-    m.plot_confusion_matrix(y_test=y_test.values,
-                            y_pred=y_pred,
-                            labels=np.unique(y_test),
-                            # labels=self.y_test.unique(),
-                            normalize=True,
-                            title=f'Confusion matrix for {name}',
-                            cmap=plt.cm.Blues)
-
-calculate_metrics(model_lgbm[0], 'Light GBM', X_test, y_test, y_train)
+# check the metrics on testing dataset
+mt.metrics_report(model_lgbm[0], 'Light GBM', X_test, y_test, y_train, data='test')
 ```
 
                   precision    recall  f1-score   support
@@ -795,7 +750,7 @@ calculate_metrics(model_lgbm[0], 'Light GBM', X_test, y_test, y_train)
 
 
     
-![png](README_files/README_28_1.png)
+![png](README_files/README_29_1.png)
     
 
 
@@ -858,7 +813,7 @@ model_ada, y_pred_ada = cls_models.checkmodel(
 
 
     
-![png](README_files/README_30_1.png)
+![png](README_files/README_31_1.png)
     
 
 
@@ -867,27 +822,8 @@ model_ada, y_pred_ada = cls_models.checkmodel(
 
 
 ```python
-from sklearn.metrics import classification_report
-from tools import utils as u
-from tools.models import metrics as m
-
-def calculate_metrics(model, name, X_test, y_test, y_train):
-
-    y_pred = model.predict(X_test)
-
-    a = classification_report(y_test, y_pred, labels=np.unique(y_train))
-    u.export_str(a, f"./classification_report_test/{name}.txt")
-    print(a)
-
-    m.plot_confusion_matrix(y_test=y_test.values,
-                            y_pred=y_pred,
-                            labels=np.unique(y_test),
-                            # labels=self.y_test.unique(),
-                            normalize=True,
-                            title=f'Confusion matrix for {name}',
-                            cmap=plt.cm.Blues)
-
-calculate_metrics(model_ada, 'AdaBoost', X_test, y_test, y_train)
+# check the metrics on testing dataset
+mt.metrics_report(model_ada, 'AdaBoost', X_test, y_test, y_train, data='test')
 ```
 
                   precision    recall  f1-score   support
@@ -906,13 +842,13 @@ calculate_metrics(model_ada, 'AdaBoost', X_test, y_test, y_train)
 
 
     
-![png](README_files/README_31_1.png)
+![png](README_files/README_32_1.png)
     
 
 
 __[top](#Contents)__  
 
-### Random forests
+### Random Forest
 
 
 ```python
@@ -981,12 +917,38 @@ model_rf, y_pred_rf = cls_models.checkmodel(
 
 
     
-![png](README_files/README_33_1.png)
+![png](README_files/README_34_1.png)
     
 
 
     Wall time: 25min 4s
     
+
+
+```python
+# check the metrics on testing dataset
+mt.metrics_report(model_rf, 'RandomForest', X_test, y_test, y_train, data='test')
+```
+
+                  precision    recall  f1-score   support
+    
+             0.0       0.98      0.96      0.97     18118
+             1.0       0.69      0.71      0.70       556
+             2.0       0.92      0.89      0.90      1448
+             3.0       0.25      0.83      0.39       162
+             4.0       0.97      0.94      0.96      1608
+    
+        accuracy                           0.95     21892
+       macro avg       0.76      0.87      0.78     21892
+    weighted avg       0.96      0.95      0.95     21892
+    
+    
+
+
+    
+![png](README_files/README_35_1.png)
+    
+
 
 __[top](#Contents)__  
 
@@ -1030,7 +992,7 @@ from imblearn.combine import SMOTETomek
 
 ```
 
-### SVM
+### SMOTE-Tomek Links: SVM
 
 
 ```python
@@ -1087,7 +1049,7 @@ model_svm = cls_models.checkmodel(
 
 
     
-![png](README_files/README_39_1.png)
+![png](README_files/README_41_1.png)
     
 
 
@@ -1096,7 +1058,7 @@ model_svm = cls_models.checkmodel(
 
 __[top](#Contents)__  
 
-### LightGBM
+### SMOTE-Tomek Links: LightGBM
 
 
 ```python
@@ -1152,7 +1114,7 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
 
 __[top](#Contents)__  
 
-### Random Forest
+### SMOTE-Tomek Links: Random Forest
 
 
 ```python
@@ -1161,7 +1123,12 @@ __[top](#Contents)__
 
 __[top](#Contents)__ 
 
-## SMOTE-ENN 
+<div class="alert-danger">
+    
+## SMOTE-ENN Method
+
+</div>
+
 
 Developed by Batista et al (2004), this method combines the SMOTE ability to generate synthetic examples for minority class and ENN ability to delete some observations from both classes that are identified as having different class between the observation’s class and its K-nearest neighbor majority class. The process of SMOTE-ENN can be explained as follows.
 1.	(Start of SMOTE) Choose random data from the minority class.
@@ -1251,10 +1218,21 @@ __[top](#Contents)__
 - ___Model performance:___
     - SVM, Light GBM, Random Forests, XGBoost show the best results among all tested models. However, confusion matrices show that the models have problems with classifying labels 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat).
 
-## Metrics per class
+## Metrics per class (original dataset)
 
-- __SVM__ 
-    - validation
+| Encoding | Description                               |
+|----------|-------------------------------------------|
+|    0     | N - Normal beat                           | 
+|    1     | S - Supraventricular premature beat       | 
+|    2     | V - Premature ventricular contraction     | 
+|    3     | F - Fusion of ventricular and normal beat | 
+|    4     | Q - Unclassifiable beat                   | 
+
+
+
+-  __[SVM](#SVM)__  
+
+__Validation dataset__
 
                           precision    recall  f1-score   support
                      0.0       0.99      0.96      0.98     14579
@@ -1266,8 +1244,12 @@ __[top](#Contents)__
                 accuracy                           0.96     17511
                macro avg       0.76      0.93      0.82     17511
             weighted avg       0.97      0.96      0.96     17511
-            
-    - testing
+    
+<img src="./classification_report_validation/SVM.png" width="350"/>
+
+
+__Testing dataset__  
+
                           precision    recall  f1-score   support
                      0.0       0.99      0.96      0.97     18118
                      1.0       0.52      0.80      0.63       556
@@ -1279,9 +1261,13 @@ __[top](#Contents)__
                macro avg       0.75      0.91      0.80     21892
             weighted avg       0.97      0.95      0.96     21892
 
+<img src="./classification_report_test/SVM.png" width="350"/>
 
-- __Light GBM__
-    - validation
+
+- __[Light GBM](#LightGBM)__ 
+
+__Validation dataset__
+
                           precision    recall  f1-score   support
                      0.0       0.99      0.96      0.97     14579
                      1.0       0.52      0.85      0.64       426
@@ -1293,7 +1279,10 @@ __[top](#Contents)__
                macro avg       0.77      0.91      0.83     17511
             weighted avg       0.96      0.95      0.96     17511
             
-    - testing
+<img src="./classification_report_validation/Light GBM.png" width="350"/>
+
+__Testing dataset__ 
+
                           precision    recall  f1-score   support
                      0.0       0.99      0.95      0.97     18118
                      1.0       0.50      0.82      0.62       556
@@ -1305,14 +1294,46 @@ __[top](#Contents)__
                macro avg       0.75      0.91      0.81     21892
             weighted avg       0.96      0.95      0.95     21892
 
-
-- __Random Forest__
-    - validation
-    - testing
+<img src="./classification_report_test/Light GBM.png" width="350"/>
 
 
-- __XGBoost__
-    - validaton
+- __[Random Forest](#Random-Forest)__ 
+
+__Validation dataset__
+
+                          precision    recall  f1-score   support
+                     0.0       0.98      0.96      0.97     14579
+                     1.0       0.73      0.75      0.74       426
+                     2.0       0.90      0.88      0.89      1112
+                     3.0       0.28      0.86      0.42       145
+                     4.0       0.97      0.96      0.96      1249
+
+                accuracy                           0.95     17511
+               macro avg       0.77      0.88      0.80     17511
+            weighted avg       0.96      0.95      0.96     17511
+
+<img src="./classification_report_validation/RandomForest.png" width="350"/>
+
+__Testing dataset__  
+
+                          precision    recall  f1-score   support
+                     0.0       0.98      0.96      0.97     18118
+                     1.0       0.69      0.71      0.70       556
+                     2.0       0.92      0.89      0.90      1448
+                     3.0       0.25      0.83      0.39       162
+                     4.0       0.97      0.94      0.96      1608
+
+                accuracy                           0.95     21892
+               macro avg       0.76      0.87      0.78     21892
+            weighted avg       0.96      0.95      0.95     21892
+
+<img src="./classification_report_test/RandomForest.png" width="350"/>
+
+
+- __[XGBoost](#XGBoost)__ 
+
+__Validation dataset__
+
                           precision    recall  f1-score   support
                      0.0       0.98      1.00      0.99     14579
                      1.0       0.96      0.70      0.81       426
@@ -1323,8 +1344,11 @@ __[top](#Contents)__
                 accuracy                           0.98     17511
                macro avg       0.96      0.87      0.91     17511
             weighted avg       0.98      0.98      0.98     17511     
-            
-    - testing
+
+<img src="./classification_report_validation/XGBoost.png" width="350"/>
+
+__Testing dataset__  
+
                           precision    recall  f1-score   support
                      0.0       0.98      1.00      0.99     18118
                      1.0       0.97      0.67      0.79       556
@@ -1337,8 +1361,13 @@ __[top](#Contents)__
             weighted avg       0.98      0.98      0.98     21892
 
 
-- __KNN__
-    - validation
+<img src="./classification_report_test/XGBoost.png" width="350"/>
+
+
+- __[K-Nearest Neighbors](#K-Nearest-Neighbors)__ 
+
+__Validation dataset__
+
                           precision    recall  f1-score   support
                      0.0       0.98      0.99      0.99     14579
                      1.0       0.89      0.69      0.78       426
@@ -1350,7 +1379,10 @@ __[top](#Contents)__
                macro avg       0.93      0.86      0.89     17511
             weighted avg       0.98      0.98      0.98     17511
             
-    - testing
+<img src="./classification_report_validation/KNN.png" width="350"/>
+
+__Testing dataset__  
+
                           precision    recall  f1-score   support
                      0.0       0.98      0.99      0.99     18118
                      1.0       0.88      0.67      0.76       556
@@ -1362,12 +1394,47 @@ __[top](#Contents)__
                macro avg       0.92      0.84      0.88     21892
             weighted avg       0.98      0.98      0.98     21892
 
+<img src="./classification_report_test/KNN.png" width="350"/>
 
-- __Gradient Boosting__
+
+- __[Gradient Boosting](#Gradient-Boosting)__ 
+
+__Validation dataset__
+
+                          precision    recall  f1-score   support
+
+                     0.0       0.98      0.99      0.99     14579
+                     1.0       0.89      0.65      0.75       426
+                     2.0       0.94      0.87      0.90      1112
+                     3.0       0.74      0.63      0.68       145
+                     4.0       0.99      0.96      0.97      1249
+
+                accuracy                           0.97     17511
+               macro avg       0.91      0.82      0.86     17511
+            weighted avg       0.97      0.97      0.97     17511
+
+<img src="./classification_report_validation/GradientBoost.png" width="350"/>
+
+__Testing dataset__  
+
+                          precision    recall  f1-score   support
+                     0.0       0.97      0.99      0.98     18118
+                     1.0       0.88      0.61      0.72       556
+                     2.0       0.95      0.86      0.91      1448
+                     3.0       0.61      0.62      0.61       162
+                     4.0       0.99      0.95      0.97      1608
+
+                accuracy                           0.97     21892
+               macro avg       0.88      0.81      0.84     21892
+            weighted avg       0.97      0.97      0.97     21892    
+
+<img src="./classification_report_test/GradientBoost.png" width="350"/>
 
 
-- __AdaBoost__   
-    - validation
+- __[AdaBoost](#AdaBoost)__ 
+
+__Validation dataset__
+
                           precision    recall  f1-score   support
                      0.0       0.95      0.55      0.70     14579
                      1.0       0.05      0.53      0.10       426
@@ -1379,7 +1446,10 @@ __[top](#Contents)__
                macro avg       0.43      0.63      0.44     17511
             weighted avg       0.86      0.59      0.67     17511         
              
-    - testing
+<img src="./classification_report_validation/AdaBoost.png" width="350"/>
+
+__Testing dataset__  
+
                           precision    recall  f1-score   support
                      0.0       0.96      0.57      0.71     18118
                      1.0       0.06      0.55      0.11       556
@@ -1391,7 +1461,33 @@ __[top](#Contents)__
                macro avg       0.43      0.63      0.44     21892
             weighted avg       0.87      0.60      0.68     21892
 
+<img src="./classification_report_test/AdaBoost.png" width="350"/>
 
+
+<div class="alert-danger">
+    
+## Metrics per class (resampled dataset)
+
+
+
+
+
+- __[SMOTE-Tomek Links: SVM](#SMOTE-Tomek-Links:-SVM)__ 
+
+__Validation dataset__
+
+
+__Testing dataset__  
+
+
+- __[SMOTE-Tomek Links: LightGBM](#SMOTE-Tomek-Links:-LightGBM)__ 
+
+__Validation dataset__
+
+
+__Testing dataset__  
+
+</div>
 
 <!-- |               | Precision | Recall  | f1-score | Support |
 |---------------|----------|----------|----------|---------|
@@ -1399,8 +1495,6 @@ __[top](#Contents)__
 |   macro avg   |    0.77  |    0.91  |    0.83  |   17511 |
 |weighted avg   |    0.96  |    0.95  |    0.96  |   17511 |
  -->
-
-
 
 
 
@@ -1417,7 +1511,6 @@ __[top](#Contents)__
 - Fine tuning
 - Compare models constructed on balanced / unbalanced dataset using different down-sampling/upsampling techniques.
 - AUC for each class
-- Recall for each class
 - Precision-recall curve
 
 __[top](#Contents)__  
