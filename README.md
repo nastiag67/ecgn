@@ -27,7 +27,6 @@ __[⁽ⁿᵉʷ⁾5. Summary of the results](#Summary-of-the-results)__
 __[6. TO DO](#TO-DO)__  
 
 
-
 ```python
 import numpy as np 
 import pandas as pd 
