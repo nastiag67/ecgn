@@ -17,7 +17,11 @@ setup.cfg
 # Other
 desktop.ini
 *minetemp*
-
+data
+temp_report_test
+temp_report_validation
+pickle_models
+pickle models with size more than 100MB
 
 ######################################################################################
 # Byte-compiled / optimized / DLL files

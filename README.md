@@ -1,7 +1,7 @@
 # Contents
 
 __[1. Dataset](#DATASET)__  
-a
+
 __[2. Exploratory data analysis  ](#EXPLORATORY-DATA-ANALYSIS)__  
 
 __[⁽ⁿᵉʷ⁾3. Model Selection](#MODEL-SELECTION)__  
@@ -21,8 +21,8 @@ __[4. Resampling](#Resamling)__
 
 __[⁽ⁿᵉʷ⁾5. Summary of the results](#Summary-of-the-results)__  
     [5.1. Metrics over all classes](#Metrics-over-all-classes)  
-    [⁽ⁿᵉʷ⁾5.2. Metrics per class: original dataset](#Metrics-per-class:-original-dataset)
-    [5.3. Metrics per class: resampled dataset](#Metrics-per-class:-resampled-dataset)
+    [⁽ⁿᵉʷ⁾5.2. Metrics per class (original dataset)](#Metrics-per-class-(original-dataset))  
+    [5.3. Metrics per class (resampled dataset)](#Metrics-per-class-(resampled-dataset))  
 
 __[6. TO DO](#TO-DO)__  
 
@@ -54,7 +54,7 @@ from imblearn.combine import SMOTEENN
 from imblearn.under_sampling import EditedNearestNeighbours
 
 # my packages
-import tools as t
+import pipelitools as t
 ```
 
 # DATASET  
@@ -82,8 +82,8 @@ for dirname, _, filenames in os.walk('../data'):
         print(os.path.join(dirname, filename))
         
 # mitbih data
-df_train = pd.read_csv('../data/mitbih_train.csv', header=None)
-df_test = pd.read_csv('../data/mitbih_test.csv', header=None)
+df_train = pd.read_csv('./data/mitbih_train.csv', header=None)
+df_test = pd.read_csv('./data/mitbih_test.csv', header=None)
 
 # combined df
 train = df_train.rename(columns={187:'y'})
@@ -107,30 +107,11 @@ __[top](#Contents)__
 
 
 ```python
-from tools.preprocessing import eda
+from pipelitools.preprocessing import eda
 
 cls_df = eda.Dataset(X_train)
-# cls_df.get_overview()
-```
-
-
-```python
-from tools.preprocessing import eda
-
-cls_df = eda.Dataset(train)
-train = cls_df.get_randomdata(n=10000)
-
-# training data
-X_train = train[train.columns[:-1]]
-y_train = train[train.columns[-1]]
-
-```
-
-
-```python
-reload(eda)
-cls_df = eda.Dataset(X_train)
-cls_df.get_summary(y=y_train,
+cls_df.get_summary(
+    y=y_train,
     nan=True,
     formats=True,
     categorical=True,
@@ -154,8 +135,9 @@ cls_df.get_summary(y=y_train,
     Plotting distributions of variables against normal distribution
     
 
+
     
-![png](README_files/README_7_2.png)
+![png](README_files/README_5_2.png)
     
 
 
@@ -178,7 +160,7 @@ plt.show()
 
 
     
-![png](README_files/README_9_0.png)
+![png](README_files/README_7_0.png)
     
 
 
@@ -207,7 +189,7 @@ plt.show()
 
 
     
-![png](README_files/README_11_0.png)
+![png](README_files/README_9_0.png)
     
 
 
@@ -232,10 +214,10 @@ import multiprocessing
 n_jobs=multiprocessing.cpu_count()  # 56
 
 #my package
-import tools as t
+import pipelitools as t
 reload(t)
-from tools.models import models as m
-from tools.models import metrics as mt
+from pipelitools.models import models as m
+from pipelitools.models import metrics as mt
 reload(mt)
 
 # Create the pipeline
@@ -285,7 +267,8 @@ model_knn, y_pred_knn = cls_models.checkmodel(
                                     randomized_search=False,
                                     nfolds=5,
                                     n_jobs=56,
-                                    verbose=1
+                                    save_pickle=True,
+                                    verbose=3
                                     )
 
 ```
@@ -305,7 +288,7 @@ model_knn, y_pred_knn = cls_models.checkmodel(
 
 
     
-![png](README_files/README_16_1.png)
+![png](README_files/README_14_1.png)
     
 
 
@@ -334,7 +317,7 @@ mt.metrics_report(model_knn, 'KNN', X_test, y_test, y_train, data='test')
 
 
     
-![png](README_files/README_17_1.png)
+![png](README_files/README_15_1.png)
     
 
 
@@ -373,7 +356,8 @@ model_svm, y_pred_svm = cls_models.checkmodel(
                                     randomized_search=False,
                                     nfolds=5,
                                     n_jobs=56,
-                                    verbose=1
+                                    save_pickle=True,
+                                    verbose=3
                                     )
 
 ```
@@ -393,7 +377,7 @@ model_svm, y_pred_svm = cls_models.checkmodel(
 
 
     
-![png](README_files/README_19_1.png)
+![png](README_files/README_17_1.png)
     
 
 
@@ -422,7 +406,7 @@ mt.metrics_report(model_svm[0], 'SVM', X_test, y_test, y_train, data='test')
 
 
     
-![png](README_files/README_20_1.png)
+![png](README_files/README_18_1.png)
     
 
 
@@ -478,7 +462,8 @@ model_xgb, y_pred_xgb = cls_models.checkmodel(
                                     randomized_search=False,
                                     nfolds=5,
                                     n_jobs=56,
-                                    verbose=1
+                                    save_pickle=True,
+                                    verbose=3
                                     )
 
 ```
@@ -509,7 +494,7 @@ model_xgb, y_pred_xgb = cls_models.checkmodel(
 
 
     
-![png](README_files/README_22_3.png)
+![png](README_files/README_20_3.png)
     
 
 
@@ -538,7 +523,7 @@ mt.metrics_report(model_xgb[0], 'XGBoost', X_test, y_test, y_train, data='test')
 
 
     
-![png](README_files/README_23_1.png)
+![png](README_files/README_21_1.png)
     
 
 
@@ -584,7 +569,8 @@ model_gb, y_pre_gb = cls_models.checkmodel(
                                     randomized_search=False,
                                     nfolds=5,
                                     n_jobs=56,
-                                    verbose=1
+                                    save_pickle=True,
+                                    verbose=3
                                     )
 
 ```
@@ -614,7 +600,7 @@ model_gb, y_pre_gb = cls_models.checkmodel(
 
 
     
-![png](README_files/README_25_1.png)
+![png](README_files/README_23_1.png)
     
 
 
@@ -643,7 +629,7 @@ mt.metrics_report(model_gb, 'GradientBoost', X_test, y_test, y_train, data='test
 
 
     
-![png](README_files/README_26_1.png)
+![png](README_files/README_24_1.png)
     
 
 
@@ -692,7 +678,8 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
                                     randomized_search=False,
                                     nfolds=5,
                                     n_jobs=56,
-                                    verbose=1
+                                    save_pickle=True,
+                                    verbose=3
                                     )
 ```
 
@@ -721,7 +708,7 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
 
 
     
-![png](README_files/README_28_1.png)
+![png](README_files/README_26_1.png)
     
 
 
@@ -750,7 +737,7 @@ mt.metrics_report(model_lgbm[0], 'Light GBM', X_test, y_test, y_train, data='tes
 
 
     
-![png](README_files/README_29_1.png)
+![png](README_files/README_27_1.png)
     
 
 
@@ -792,7 +779,8 @@ model_ada, y_pred_ada = cls_models.checkmodel(
                                     randomized_search=False,
                                     nfolds=5,
                                     n_jobs=45,
-                                    verbose=1
+                                    save_pickle=True,
+                                    verbose=3
                                     )
 ```
 
@@ -813,7 +801,7 @@ model_ada, y_pred_ada = cls_models.checkmodel(
 
 
     
-![png](README_files/README_31_1.png)
+![png](README_files/README_29_1.png)
     
 
 
@@ -842,7 +830,7 @@ mt.metrics_report(model_ada, 'AdaBoost', X_test, y_test, y_train, data='test')
 
 
     
-![png](README_files/README_32_1.png)
+![png](README_files/README_30_1.png)
     
 
 
@@ -889,7 +877,8 @@ model_rf, y_pred_rf = cls_models.checkmodel(
                                     randomized_search=False,
                                     nfolds=5,
                                     n_jobs=56,
-                                    verbose=1
+                                    save_pickle=True,
+                                    verbose=3
                                     )
 ```
 
@@ -917,7 +906,7 @@ model_rf, y_pred_rf = cls_models.checkmodel(
 
 
     
-![png](README_files/README_34_1.png)
+![png](README_files/README_32_1.png)
     
 
 
@@ -946,7 +935,7 @@ mt.metrics_report(model_rf, 'RandomForest', X_test, y_test, y_train, data='test'
 
 
     
-![png](README_files/README_35_1.png)
+![png](README_files/README_33_1.png)
     
 
 
@@ -975,12 +964,6 @@ The __process to generate the synthetic samples__:
 This method is effective because the synthetic data that are generated are relatively close with the feature space on the minority class, thus adding new “information” on the data, unlike the original oversampling method.
 
 
-
-
-```python
-resample=SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'))
-
-```
 
 ## SMOTE-Tomek Links Method
 
@@ -1018,7 +1001,7 @@ parameters = {
     'SVM__class_weight': ['balanced'],  # None
     }
 
-model_svm = cls_models.checkmodel(
+model_svm, y_pred_svm = cls_models.checkmodel(
                                     name,
                                     model,
                                     steps=steps,
@@ -1029,7 +1012,8 @@ model_svm = cls_models.checkmodel(
                                     randomized_search=False,
                                     nfolds=5,
                                     n_jobs=56,
-                                    verbose=2
+                                    save_pickle=True,
+                                    verbose=3
                                     )
 
 ```
@@ -1049,7 +1033,7 @@ model_svm = cls_models.checkmodel(
 
 
     
-![png](README_files/README_41_1.png)
+![png](README_files/README_38_1.png)
     
 
 
@@ -1105,6 +1089,7 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
                                     randomized_search=False,
                                     nfolds=5,
                                     n_jobs=56,
+                                    save_pickle=True,
                                     verbose=3
                                     )
 ```
@@ -1245,7 +1230,7 @@ __Validation dataset__
                macro avg       0.76      0.93      0.82     17511
             weighted avg       0.97      0.96      0.96     17511
     
-<img src="./classification_report_validation/SVM.png" width="350"/>
+<img src="./Reports/Original/classification_report_validation/SVM.png" width="350"/>
 
 
 __Testing dataset__  
@@ -1261,7 +1246,7 @@ __Testing dataset__
                macro avg       0.75      0.91      0.80     21892
             weighted avg       0.97      0.95      0.96     21892
 
-<img src="./classification_report_test/SVM.png" width="350"/>
+<img src="./Reports/Original/classification_report_test/SVM.png" width="350"/>
 
 
 - __[Light GBM](#LightGBM)__ 
@@ -1279,7 +1264,7 @@ __Validation dataset__
                macro avg       0.77      0.91      0.83     17511
             weighted avg       0.96      0.95      0.96     17511
             
-<img src="./classification_report_validation/Light GBM.png" width="350"/>
+<img src="./Reports/Original/classification_report_validation/Light GBM.png" width="350"/>
 
 __Testing dataset__ 
 
@@ -1294,7 +1279,7 @@ __Testing dataset__
                macro avg       0.75      0.91      0.81     21892
             weighted avg       0.96      0.95      0.95     21892
 
-<img src="./classification_report_test/Light GBM.png" width="350"/>
+<img src="./Reports/Original/classification_report_test/Light GBM.png" width="350"/>
 
 
 - __[Random Forest](#Random-Forest)__ 
@@ -1312,7 +1297,7 @@ __Validation dataset__
                macro avg       0.77      0.88      0.80     17511
             weighted avg       0.96      0.95      0.96     17511
 
-<img src="./classification_report_validation/RandomForest.png" width="350"/>
+<img src="./Reports/Original/classification_report_validation/RandomForest.png" width="350"/>
 
 __Testing dataset__  
 
@@ -1327,7 +1312,7 @@ __Testing dataset__
                macro avg       0.76      0.87      0.78     21892
             weighted avg       0.96      0.95      0.95     21892
 
-<img src="./classification_report_test/RandomForest.png" width="350"/>
+<img src="./Reports/Original/classification_report_test/RandomForest.png" width="350"/>
 
 
 - __[XGBoost](#XGBoost)__ 
@@ -1345,7 +1330,7 @@ __Validation dataset__
                macro avg       0.96      0.87      0.91     17511
             weighted avg       0.98      0.98      0.98     17511     
 
-<img src="./classification_report_validation/XGBoost.png" width="350"/>
+<img src="./Reports/Original/classification_report_validation/XGBoost.png" width="350"/>
 
 __Testing dataset__  
 
@@ -1361,7 +1346,7 @@ __Testing dataset__
             weighted avg       0.98      0.98      0.98     21892
 
 
-<img src="./classification_report_test/XGBoost.png" width="350"/>
+<img src="./Reports/Original/classification_report_test/XGBoost.png" width="350"/>
 
 
 - __[K-Nearest Neighbors](#K-Nearest-Neighbors)__ 
@@ -1379,7 +1364,7 @@ __Validation dataset__
                macro avg       0.93      0.86      0.89     17511
             weighted avg       0.98      0.98      0.98     17511
             
-<img src="./classification_report_validation/KNN.png" width="350"/>
+<img src="./Reports/Original/classification_report_validation/KNN.png" width="350"/>
 
 __Testing dataset__  
 
@@ -1394,7 +1379,7 @@ __Testing dataset__
                macro avg       0.92      0.84      0.88     21892
             weighted avg       0.98      0.98      0.98     21892
 
-<img src="./classification_report_test/KNN.png" width="350"/>
+<img src="./Reports/Original/classification_report_test/KNN.png" width="350"/>
 
 
 - __[Gradient Boosting](#Gradient-Boosting)__ 
@@ -1413,7 +1398,7 @@ __Validation dataset__
                macro avg       0.91      0.82      0.86     17511
             weighted avg       0.97      0.97      0.97     17511
 
-<img src="./classification_report_validation/GradientBoost.png" width="350"/>
+<img src="./Reports/Original/classification_report_validation/GradientBoost.png" width="350"/>
 
 __Testing dataset__  
 
@@ -1428,7 +1413,7 @@ __Testing dataset__
                macro avg       0.88      0.81      0.84     21892
             weighted avg       0.97      0.97      0.97     21892    
 
-<img src="./classification_report_test/GradientBoost.png" width="350"/>
+<img src="./Reports/Original/classification_report_test/GradientBoost.png" width="350"/>
 
 
 - __[AdaBoost](#AdaBoost)__ 
@@ -1446,7 +1431,7 @@ __Validation dataset__
                macro avg       0.43      0.63      0.44     17511
             weighted avg       0.86      0.59      0.67     17511         
              
-<img src="./classification_report_validation/AdaBoost.png" width="350"/>
+<img src="./Reports/Original/classification_report_validation/AdaBoost.png" width="350"/>
 
 __Testing dataset__  
 
@@ -1461,7 +1446,7 @@ __Testing dataset__
                macro avg       0.43      0.63      0.44     21892
             weighted avg       0.87      0.60      0.68     21892
 
-<img src="./classification_report_test/AdaBoost.png" width="350"/>
+<img src="./Reports/Original/classification_report_test/AdaBoost.png" width="350"/>
 
 
 <div class="alert-danger">
@@ -1476,18 +1461,52 @@ __Testing dataset__
 
 __Validation dataset__
 
-
 __Testing dataset__  
 
-
+</div>
+   
 - __[SMOTE-Tomek Links: LightGBM](#SMOTE-Tomek-Links:-LightGBM)__ 
 
 __Validation dataset__
 
+                          precision    recall  f1-score   support
+                     0.0       0.99      0.94      0.97     14579
+                     1.0       0.42      0.88      0.56       426
+                     2.0       0.88      0.93      0.91      1112
+                     3.0       0.44      0.83      0.58       145
+                     4.0       0.97      0.98      0.98      1249
+
+                accuracy                           0.94     17511
+               macro avg       0.74      0.92      0.80     17511
+            weighted avg       0.96      0.94      0.95     17511
+
+<img src="./Reports/SMOTE Tomek-Links resampling/classification_report_validation/LightGBM.png" width="350"/>
+
+
 
 __Testing dataset__  
 
-</div>
+
+                          precision    recall  f1-score   support
+                     0.0       0.99      0.94      0.97     18118
+                     1.0       0.41      0.82      0.54       556
+                     2.0       0.91      0.93      0.92      1448
+                     3.0       0.38      0.86      0.53       162
+                     4.0       0.97      0.98      0.97      1608
+
+                accuracy                           0.94     21892
+               macro avg       0.73      0.91      0.79     21892
+            weighted avg       0.96      0.94      0.95     21892
+
+
+<img src="./Reports/SMOTE Tomek-Links resampling/classification_report_test/LightGBM.png" width="350"/>
+
+
+
+
+
+
+
 
 <!-- |               | Precision | Recall  | f1-score | Support |
 |---------------|----------|----------|----------|---------|
