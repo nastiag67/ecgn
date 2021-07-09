@@ -18,8 +18,8 @@ setup.cfg
 desktop.ini
 *minetemp*
 data
-classification_report_test
-classification_report_validation
+temp_report_test
+temp_report_validation
 pickle_models
 
 ######################################################################################
