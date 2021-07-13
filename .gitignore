@@ -9,7 +9,6 @@ requirements_dev.txt
 
 # technical
 setup.cfg
-.gitignore
 
 # PyCharm
 .idea
@@ -17,10 +16,11 @@ setup.cfg
 # Other
 desktop.ini
 *minetemp*
+*Copy*
 data
 temp_report_test
 temp_report_validation
-pickle_models
+temp_pickle_models
 pickle models with size more than 100MB
 
 ######################################################################################
