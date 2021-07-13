@@ -4,7 +4,7 @@ __[1. Dataset](#DATASET)__
 
 __[2. Exploratory data analysis  ](#EXPLORATORY-DATA-ANALYSIS)__  
 
-__[⁽ⁿᵉʷ⁾3. Model Selection](#MODEL-SELECTION)__  
+__[3. Model Selection](#MODEL-SELECTION)__  
     [3.1. Individual machine learning models](#Individual-machine-learning-models)  
     [3.1.1. K-Nearest Neighbors](#K-Nearest-Neighbors)  
     [3.1.2. SVM](#SVM)  
@@ -16,13 +16,13 @@ __[⁽ⁿᵉʷ⁾3. Model Selection](#MODEL-SELECTION)__
     [3.2.5. Random forests](#Random-forests)  
     
 __[4. Resampling](#Resamling)__  
-    [4.1. SMOTE-Tomek Links Method](#SMOTE-Tomek-Links-Method)  
+    [⁽ⁿᵉʷ⁾4.1. SMOTE-Tomek Links Method](#SMOTE-Tomek-Links-Method)  
     [4.2. SMOTE-ENN Method](#SMOTE-ENN-Method)  
 
 __[⁽ⁿᵉʷ⁾5. Summary of the results](#Summary-of-the-results)__  
     [5.1. Metrics over all classes](#Metrics-over-all-classes)  
-    [⁽ⁿᵉʷ⁾5.2. Metrics per class (original dataset)](#Metrics-per-class-(original-dataset))  
-    [5.3. Metrics per class (resampled dataset)](#Metrics-per-class-(resampled-dataset))  
+    [5.2. Metrics per class for original dataset](#Metrics-per-class-for-original-dataset)  
+    [⁽ⁿᵉʷ⁾5.3. Metrics per class for resampled dataset](#Metrics-per-class-for-resampled-dataset)  
 
 __[6. TO DO](#TO-DO)__  
 
@@ -126,7 +126,7 @@ cls_df.get_summary(
     Possible categorical variables (<10 unique values):  []
     Min value < 0:  []
     Observations per class:
-    0    72471
+     0    72471
     1     2223
     2     5788
     3      641
@@ -643,7 +643,7 @@ __[top](#Contents)__
 import lightgbm as lgb
 
 name='LGBMClassifier'
-model = lgb.LGBMClassifier(seed=42, random_state=42,
+model = lgb.LGBMClassifier(random_state=42,
                          objective='multiclass', 
 #                          n_jobs=51
                          )
@@ -972,7 +972,6 @@ This method is effective because the synthetic data that are generated are relat
 ```python
 from imblearn.under_sampling import TomekLinks
 from imblearn.combine import SMOTETomek
-
 ```
 
 ### SMOTE-Tomek Links: SVM
@@ -984,7 +983,7 @@ from imblearn.combine import SMOTETomek
 name = 'SVM'
 model = SVC()
 
-resample=SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'))
+resample=SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'), random_state=42)
 
 steps=[
     ('r', resample),
@@ -1040,6 +1039,32 @@ model_svm, y_pred_svm = cls_models.checkmodel(
     Wall time: 8h 21min 48s
     
 
+
+```python
+# check the metrics on testing dataset
+mt.metrics_report(model_svm, 'SVM', X_test, y_test, y_train, data='test')
+```
+
+                  precision    recall  f1-score   support
+    
+             0.0       0.99      0.94      0.96     18118
+             1.0       0.42      0.82      0.56       556
+             2.0       0.89      0.93      0.91      1448
+             3.0       0.29      0.90      0.44       162
+             4.0       0.97      0.98      0.98      1608
+    
+        accuracy                           0.94     21892
+       macro avg       0.71      0.91      0.77     21892
+    weighted avg       0.96      0.94      0.95     21892
+    
+    
+
+
+    
+![png](README_files/README_39_1.png)
+    
+
+
 __[top](#Contents)__  
 
 ### SMOTE-Tomek Links: LightGBM
@@ -1050,12 +1075,12 @@ __[top](#Contents)__
 import lightgbm as lgb
 
 name='LGBMClassifier'
-model = lgb.LGBMClassifier(seed=42, random_state=42,
+model = lgb.LGBMClassifier(random_state=42,
                          objective='multiclass', 
-                         n_jobs=51
+#                          n_jobs=51
                          )
  
-resample=SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'))
+resample=SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'), random_state=42)
 
 steps=[
     ('r', resample),
@@ -1095,16 +1120,145 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
 ```
 
     Fitting 5 folds for each of 972 candidates, totalling 4860 fits
+    [LightGBM] [Warning] seed is set=42, random_state=42 will be ignored. Current value: seed=42
+    Mean cross-validated score of the best_estimator: 0.9156
+               Parameter Tuned value
+    0      boosting_type        gbdt
+    1       class_weight         0.1
+    2      learning_rate         0.1
+    3          max_depth          10
+    4  min_child_samples          20
+    5       n_estimators         100
+    6         num_leaves          31
+    7          reg_alpha        0.03
+    8         reg_lambda        0.07
+    9          subsample           1
+    F1-score: 0.7993
+    Precision: 0.7407
+    Recall: 0.9154
+    Accuracy on train data: 0.9833
+    Accuracy on test data: 0.9445
     
 
-__[top](#Contents)__  
 
-### SMOTE-Tomek Links: Random Forest
+    
+![png](README_files/README_41_1.png)
+    
+
+
+    Wall time: 14d 15h 45min 32s
+    
 
 
 ```python
+%%time
+import lightgbm as lgb
 
+name='LGBMClassifier'
+model = lgb.LGBMClassifier(random_state=42,
+                         objective='multiclass', 
+#                          n_jobs=51
+                         )
+ 
+resample=SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'), random_state=42)
+
+steps=[
+    ('r', resample),
+]
+
+parameters = {
+    'LGBMClassifier__boosting_type': ['gbdt'],  # 'gbdt'
+    'LGBMClassifier__num_leaves': [31],  # 31
+    'LGBMClassifier__max_depth': [10],  # -1
+    'LGBMClassifier__learning_rate': [0.1],  # 0.1
+    'LGBMClassifier__n_estimators': [100],  # 100
+#     'LGBMClassifier__subsample_for_bin': [200000],  # 200000
+    'LGBMClassifier__class_weight': ['balanced'],  # None
+#     'LGBMClassifier__min_split_gain': [0],  # 0
+#     'LGBMClassifier__min_child_weight': [1e-3],  # 1e-3
+    'LGBMClassifier__min_child_samples': [20],  # 20
+    'LGBMClassifier__subsample': [1],  # 1
+#     'LGBMClassifier__colsample_bytree': [1],  # 1
+    'LGBMClassifier__reg_alpha': [0.03],  # 0
+    'LGBMClassifier__reg_lambda': [0.07],  # 0
+}
+
+model_lgbm, y_pred_lgbm = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='macro',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=56,
+                                    save_pickle=True,
+                                    verbose=3
+                                    )
 ```
+
+    Fitting 5 folds for each of 1 candidates, totalling 5 fits
+    Mean cross-validated score of the best_estimator: 0.9014
+               Parameter Tuned value
+    0      boosting_type        gbdt
+    1       class_weight    balanced
+    2      learning_rate         0.1
+    3          max_depth          10
+    4  min_child_samples          20
+    5       n_estimators         100
+    6         num_leaves          31
+    7          reg_alpha        0.03
+    8         reg_lambda        0.07
+    9          subsample           1 
+    
+                  precision    recall  f1-score   support
+    
+             0.0       0.99      0.97      0.98     14579
+             1.0       0.60      0.82      0.69       426
+             2.0       0.89      0.94      0.92      1112
+             3.0       0.60      0.81      0.69       145
+             4.0       0.98      0.98      0.98      1249
+    
+        accuracy                           0.97     17511
+       macro avg       0.81      0.91      0.85     17511
+    weighted avg       0.97      0.97      0.97     17511
+    
+    Wall time: 44min 13s
+    
+
+
+    
+![png](README_files/README_42_1.png)
+    
+
+
+
+```python
+# check the metrics on testing dataset
+mt.metrics_report(model_lgbm, 'LightGBM', X_test, y_test, y_train, data='test')
+```
+
+                  precision    recall  f1-score   support
+    
+             0.0       0.99      0.97      0.98     18118
+             1.0       0.58      0.79      0.67       556
+             2.0       0.91      0.94      0.92      1448
+             3.0       0.53      0.84      0.65       162
+             4.0       0.98      0.98      0.98      1608
+    
+        accuracy                           0.96     21892
+       macro avg       0.80      0.90      0.84     21892
+    weighted avg       0.97      0.96      0.97     21892
+    
+    
+
+
+    
+![png](README_files/README_43_1.png)
+    
+
 
 __[top](#Contents)__ 
 
@@ -1128,13 +1282,13 @@ Developed by Batista et al (2004), this method combines the SMOTE ability to gen
 
 
 ```python
-resample=SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='all'))
+resample=SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='all'), random_state=42)
 X, y = resample.fit_resample(X_train, y_train)
 X.info()
 ```
 
     <class 'pandas.core.frame.DataFrame'>
-    RangeIndex: 286403 entries, 0 to 286402
+    RangeIndex: 286428 entries, 0 to 286427
     Columns: 187 entries, 0 to 186
     dtypes: float64(187)
     memory usage: 408.6 MB
@@ -1203,7 +1357,7 @@ __[top](#Contents)__
 - ___Model performance:___
     - SVM, Light GBM, Random Forests, XGBoost show the best results among all tested models. However, confusion matrices show that the models have problems with classifying labels 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat).
 
-## Metrics per class (original dataset)
+## Metrics per class for original dataset
 
 | Encoding | Description                               |
 |----------|-------------------------------------------|
@@ -1449,9 +1603,11 @@ __Testing dataset__
 <img src="./Reports/Original/classification_report_test/AdaBoost.png" width="350"/>
 
 
-<div class="alert-danger">
+__[top](#Contents)__ 
+
+
     
-## Metrics per class (resampled dataset)
+## Metrics per class for resampled dataset
 
 
 
@@ -1461,9 +1617,40 @@ __Testing dataset__
 
 __Validation dataset__
 
+                          precision    recall  f1-score   support
+                     0.0       0.99      0.94      0.97     14579
+                     1.0       0.45      0.85      0.59       426
+                     2.0       0.89      0.92      0.90      1112
+                     3.0       0.29      0.92      0.45       145
+                     4.0       0.97      0.98      0.97      1249
+
+                accuracy                           0.94     17511
+               macro avg       0.72      0.92      0.78     17511
+            weighted avg       0.96      0.94      0.95     17511
+
+
+<img src="./Reports/SMOTE Tomek-Links resampling/classification_report_validation/SVM.png" width="350"/>
+
+
+
 __Testing dataset__  
 
-</div>
+                          precision    recall  f1-score   support
+                     0.0       0.99      0.94      0.96     18118
+                     1.0       0.42      0.82      0.56       556
+                     2.0       0.89      0.93      0.91      1448
+                     3.0       0.29      0.90      0.44       162
+                     4.0       0.97      0.98      0.98      1608
+
+                accuracy                           0.94     21892
+               macro avg       0.71      0.91      0.77     21892
+            weighted avg       0.96      0.94      0.95     21892
+
+
+<img src="./Reports/SMOTE Tomek-Links resampling/classification_report_test/SVM.png" width="350"/>
+
+
+
    
 - __[SMOTE-Tomek Links: LightGBM](#SMOTE-Tomek-Links:-LightGBM)__ 
 
@@ -1504,6 +1691,23 @@ __Testing dataset__
 
 
 
+<div class="alert-danger">
+
+- __[SMOTE-ENN: SVM](#SMOTE-ENN:-SVM)__ 
+
+__Validation dataset__
+
+__Testing dataset__  
+    
+
+- __[SMOTE-ENN: LightGBM](#SMOTE-ENN:-LightGBM)__ 
+
+__Validation dataset__
+
+__Testing dataset__  
+
+
+</div>
 
 
 
