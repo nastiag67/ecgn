@@ -14,10 +14,17 @@ __[3. Model Selection](#MODEL-SELECTION)__
     [3.2.3. LightGBM](#LightGBM)  
     [3.2.4. AdaBoost](#AdaBoost)  
     [3.2.5. Random forests](#Random-forests)  
+    [3.3. Deep Learning](#Deep-Learning)  
+    [3.3.1. CNN](#Deep-Learning)  
+    [3.3.2. LSTM](#Deep-Learning)  
     
 __[4. Resampling](#Resamling)__  
     [⁽ⁿᵉʷ⁾4.1. SMOTE-Tomek Links Method](#SMOTE-Tomek-Links-Method)  
+    [4.1.1. SVM](#SMOTE-ENN-Method)  
+    [4.1.2. Light GBM](#SMOTE-ENN-Method)  
     [4.2. SMOTE-ENN Method](#SMOTE-ENN-Method)  
+    [4.2.1. SVM](#SMOTE-ENN-Method)  
+    [4.2.2. Light GBM](#SMOTE-ENN-Method)  
 
 __[⁽ⁿᵉʷ⁾5. Summary of the results](#Summary-of-the-results)__  
     [5.1. Metrics over all classes](#Metrics-over-all-classes)  
