@@ -470,6 +470,7 @@ model_xgb, y_pred_xgb = cls_models.checkmodel(
 
     Fitting 5 folds for each of 648 candidates, totalling 3240 fits
     
+    
 
     Mean cross-validated score of the best_estimator: 0.8518
                 Parameter    Tuned value
@@ -1150,8 +1151,6 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
     
 
 
-
-
 ```python
 # check the metrics on testing dataset
 mt.metrics_report(model_lgbm, 'LightGBM', X_test, y_test, y_train, data='test')
@@ -1173,7 +1172,7 @@ mt.metrics_report(model_lgbm, 'LightGBM', X_test, y_test, y_train, data='test')
 
 
     
-![png](README_files/README_43_1.png)
+![png](README_files/README_42_1.png)
     
 
 
@@ -1209,7 +1208,16 @@ X.info()
     Columns: 187 entries, 0 to 186
     dtypes: float64(187)
     memory usage: 408.6 MB
+    <class 'pandas.core.frame.DataFrame'>
+    RangeIndex: 286428 entries, 0 to 286427
+    Columns: 187 entries, 0 to 186
+    dtypes: float64(187)
+    memory usage: 408.6 MB
     
+
+__[top](#Contents)__  
+
+### SMOTE-ENN: SVM
 
 
 ```python
@@ -1218,7 +1226,7 @@ X.info()
 name = 'SVM'
 model = SVC()
 
-resample=SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='all'))
+resample=SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='all'), random_state=42)
 
 steps=[
     ('r', resample),
@@ -1235,7 +1243,7 @@ parameters = {
     'SVM__class_weight': ['balanced'],  # None
     }
 
-model_svm = cls_models.checkmodel(
+model_svm, y_pred_svm = cls_models.checkmodel(
                                     name,
                                     model,
                                     steps=steps,
@@ -1246,10 +1254,222 @@ model_svm = cls_models.checkmodel(
                                     randomized_search=False,
                                     nfolds=5,
                                     n_jobs=56,
-                                    verbose=2
+                                    verbose=3
                                     )
 
 ```
+
+    Fitting 5 folds for each of 15 candidates, totalling 75 fits
+    Fitting 5 folds for each of 15 candidates, totalling 75 fits
+    Mean cross-validated score of the best_estimator: 0.9118
+          Parameter Tuned value
+    0             C           1
+    1  class_weight    balanced
+    2         gamma         0.1 
+    
+    Mean cross-validated score of the best_estimator: 0.9118
+          Parameter Tuned value
+    0             C           1
+    1  class_weight    balanced
+    2         gamma         0.1 
+    
+                  precision    recall  f1-score   support
+    
+             0.0       0.99      0.93      0.96     14579
+             1.0       0.43      0.87      0.57       426
+             2.0       0.86      0.93      0.89      1112
+             3.0       0.29      0.92      0.44       145
+             4.0       0.97      0.98      0.97      1249
+    
+        accuracy                           0.94     17511
+       macro avg       0.71      0.93      0.77     17511
+    weighted avg       0.96      0.94      0.94     17511
+    
+                  precision    recall  f1-score   support
+    
+             0.0       0.99      0.93      0.96     14579
+             1.0       0.43      0.87      0.57       426
+             2.0       0.86      0.93      0.89      1112
+             3.0       0.29      0.92      0.44       145
+             4.0       0.97      0.98      0.97      1249
+    
+        accuracy                           0.94     17511
+       macro avg       0.71      0.93      0.77     17511
+    weighted avg       0.96      0.94      0.94     17511
+    
+    Wall time: 8h 44min 17s
+    Wall time: 8h 44min 17s
+    
+
+
+    
+![png](README_files/README_46_1.png)
+    
+
+
+
+    
+![png](README_files/README_46_2.png)
+    
+
+
+
+```python
+# check the metrics on testing dataset
+mt.metrics_report(model_svm[0], 'SVM', X_test, y_test, y_train, data='test')
+```
+
+                  precision    recall  f1-score   support
+    
+             0.0       0.99      0.93      0.96     18118
+             1.0       0.40      0.83      0.54       556
+             2.0       0.87      0.94      0.90      1448
+             3.0       0.28      0.90      0.43       162
+             4.0       0.97      0.98      0.97      1608
+    
+        accuracy                           0.93     21892
+       macro avg       0.70      0.91      0.76     21892
+    weighted avg       0.96      0.93      0.94     21892
+    
+                  precision    recall  f1-score   support
+    
+             0.0       0.99      0.93      0.96     18118
+             1.0       0.40      0.83      0.54       556
+             2.0       0.87      0.94      0.90      1448
+             3.0       0.28      0.90      0.43       162
+             4.0       0.97      0.98      0.97      1608
+    
+        accuracy                           0.93     21892
+       macro avg       0.70      0.91      0.76     21892
+    weighted avg       0.96      0.93      0.94     21892
+    
+    
+
+
+    
+![png](README_files/README_47_1.png)
+    
+
+
+
+    
+![png](README_files/README_47_2.png)
+    
+
+
+__[top](#Contents)__  
+
+### SMOTE-ENN: LightGBM
+
+
+```python
+%%time
+import lightgbm as lgb
+
+name='LGBMClassifier'
+model = lgb.LGBMClassifier(random_state=42,
+                         objective='multiclass', 
+                         )
+ 
+resample=SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='all'), random_state=42)
+
+steps=[
+    ('r', resample),
+]
+
+parameters = {
+    'LGBMClassifier__boosting_type': ['gbdt'],  # 'gbdt'
+    'LGBMClassifier__num_leaves': [31],  # 31
+    'LGBMClassifier__max_depth': [-1, 10, 50],  # -1
+    'LGBMClassifier__learning_rate': [0.1, 0.05, 0.5],  # 0.1
+    'LGBMClassifier__n_estimators': [100, 500],  # 100
+#     'LGBMClassifier__subsample_for_bin': [200000],  # 200000
+    'LGBMClassifier__class_weight': ['balanced'],  # None
+#     'LGBMClassifier__min_split_gain': [0],  # 0
+#     'LGBMClassifier__min_child_weight': [1e-3],  # 1e-3
+    'LGBMClassifier__min_child_samples': [20],  # 20
+    'LGBMClassifier__subsample': [1, 0.7],  # 1
+#     'LGBMClassifier__colsample_bytree': [1],  # 1
+    'LGBMClassifier__reg_alpha': [0, 0.03, 0.07],  # 0
+    'LGBMClassifier__reg_lambda': [0, 0.03, 0.07],  # 0
+}
+
+model_lgbm, y_pred_lgbm = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='macro',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=56,
+                                    save_pickle=True,
+                                    verbose=3
+                                    )
+```
+
+    Fitting 5 folds for each of 324 candidates, totalling 1620 fits
+    Mean cross-validated score of the best_estimator: 0.909
+               Parameter Tuned value
+    0      boosting_type        gbdt
+    1       class_weight    balanced
+    2      learning_rate         0.5
+    3          max_depth          -1
+    4  min_child_samples          20
+    5       n_estimators         500
+    6         num_leaves          31
+    7          reg_alpha           0
+    8         reg_lambda        0.03
+    9          subsample           1 
+    
+                  precision    recall  f1-score   support
+    
+             0.0       0.99      0.99      0.99     14579
+             1.0       0.81      0.82      0.81       426
+             2.0       0.93      0.96      0.94      1112
+             3.0       0.83      0.82      0.82       145
+             4.0       0.98      0.99      0.98      1249
+    
+        accuracy                           0.98     17511
+       macro avg       0.91      0.92      0.91     17511
+    weighted avg       0.98      0.98      0.98     17511
+    
+    Wall time: 3d 3h 51min 12s
+    
+
+
+    
+![png](README_files/README_49_1.png)
+    
+
+
+
+```python
+# check the metrics on testing dataset
+mt.metrics_report(model_lgbm, 'LGBMClassifier', X_test, y_test, y_train, data='test')
+```
+
+                  precision    recall  f1-score   support
+    
+             0.0       0.99      0.99      0.99     18118
+             1.0       0.80      0.79      0.80       556
+             2.0       0.95      0.95      0.95      1448
+             3.0       0.76      0.81      0.79       162
+             4.0       0.98      0.98      0.98      1608
+    
+        accuracy                           0.98     21892
+       macro avg       0.90      0.91      0.90     21892
+    weighted avg       0.98      0.98      0.98     21892
+    
+    
+
+
+    
+![png](README_files/README_50_1.png)
+    
+
 
 __[top](#Contents)__ 
 
@@ -1546,7 +1766,7 @@ __Validation dataset__
             weighted avg       0.96      0.94      0.95     17511
 
 
-<img src="./Reports/SMOTE Tomek-Links resampling/classification_report_validation/SVM.png" width="350"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks.png" width="350"/>
 
 
 
@@ -1564,7 +1784,7 @@ __Testing dataset__
             weighted avg       0.96      0.94      0.95     21892
 
 
-<img src="./Reports/SMOTE Tomek-Links resampling/classification_report_test/SVM.png" width="350"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks.png" width="350"/>
 
 
 
@@ -1584,7 +1804,7 @@ __Validation dataset__
                macro avg       0.74      0.92      0.80     17511
             weighted avg       0.96      0.94      0.95     17511
 
-<img src="./Reports/SMOTE Tomek-Links resampling/classification_report_validation/LightGBM.png" width="350"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks.png" width="350"/>
 
 
 
@@ -1603,27 +1823,43 @@ __Testing dataset__
             weighted avg       0.96      0.94      0.95     21892
 
 
-<img src="./Reports/SMOTE Tomek-Links resampling/classification_report_test/LightGBM.png" width="350"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks.png" width="350"/>
 
 
 
 
-<div class="alert-danger">
 
 - __[SMOTE-ENN: SVM](#SMOTE-ENN:-SVM)__ 
 
+    
 __Validation dataset__
 
+    
+<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn.png" width="350"/>
+
+   
 __Testing dataset__  
     
 
+<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn.png" width="350"/>
+
+    
 - __[SMOTE-ENN: LightGBM](#SMOTE-ENN:-LightGBM)__ 
 
+    
 __Validation dataset__
 
+    
+<img src="./Reports/SMOTE ENN resampling/report_validation/LGBMClassifier_smoteenn.png" width="350"/>
+
+    
 __Testing dataset__  
 
+    
+<img src="./Reports/SMOTE ENN resampling/report_test/LGBMClassifier_smoteenn.png" width="350"/>
 
+
+<div class="alert-danger">
 </div>
 
 
@@ -1649,8 +1885,9 @@ __[top](#Contents)__
 # TO DO
 
 - Fine tuning
-- Compare models constructed on balanced / unbalanced dataset using different down-sampling/upsampling techniques.
 - AUC for each class
 - Precision-recall curve
+- compare resampled and original data
+- hyperparameter table
 
 __[top](#Contents)__  
