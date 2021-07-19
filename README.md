@@ -12,26 +12,20 @@ __[3. Model Selection](#MODEL-SELECTION)__
     [3.2.1. XGBoost](#XGBoost)  
     [3.2.2. Gradient boosting](#Gradient-boosting)  
     [3.2.3. LightGBM](#LightGBM)  
-    [3.2.4. AdaBoost](#AdaBoost)  
+    [⁽ⁿᵉʷ⁾3.2.4. AdaBoost](#AdaBoost)  
     [3.2.5. Random forests](#Random-forests)  
-    [3.3. Deep Learning](#Deep-Learning)  
-    [3.3.1. CNN](#Deep-Learning)  
-    [3.3.2. LSTM](#Deep-Learning)  
     
 __[4. Resampling](#Resamling)__  
-    [⁽ⁿᵉʷ⁾4.1. SMOTE-Tomek Links Method](#SMOTE-Tomek-Links-Method)  
-    [4.1.1. SVM](#SMOTE-ENN-Method)  
-    [4.1.2. Light GBM](#SMOTE-ENN-Method)  
-    [4.2. SMOTE-ENN Method](#SMOTE-ENN-Method)  
-    [4.2.1. SVM](#SMOTE-ENN-Method)  
-    [4.2.2. Light GBM](#SMOTE-ENN-Method)  
+    [4.1. SMOTE-Tomek Links Method](#SMOTE-Tomek-Links-Method)  
+    [⁽ⁿᵉʷ⁾4.2. SMOTE-ENN Method](#SMOTE-ENN-Method)  
 
 __[⁽ⁿᵉʷ⁾5. Summary of the results](#Summary-of-the-results)__  
-    [5.1. Metrics over all classes](#Metrics-over-all-classes)  
-    [5.2. Metrics per class for original dataset](#Metrics-per-class-for-original-dataset)  
+    [⁽ⁿᵉʷ⁾5.1. Metrics over all classes](#Metrics-over-all-classes)  
+    [⁽ⁿᵉʷ⁾5.2. Metrics per class for original dataset](#Metrics-per-class-for-original-dataset)  
     [⁽ⁿᵉʷ⁾5.3. Metrics per class for resampled dataset](#Metrics-per-class-for-resampled-dataset)  
 
 __[6. TO DO](#TO-DO)__  
+
 
 
 ```python
@@ -123,7 +117,7 @@ cls_df.get_summary(
     categorical=True,
     min_less_0=True,
     class_counts=True,
-    check_normdist=True,
+    check_normdist=False,
     plot_boxplots=False)
 ```
 
@@ -138,14 +132,7 @@ cls_df.get_summary(
     3      641
     4     6431
     Name: y, dtype: int64
-    Plotting distributions of variables against normal distribution
     
-
-
-    
-![png](README_files/README_5_2.png)
-    
-
 
 ### Observations per class
 
@@ -447,13 +434,13 @@ parameters = {
     'XGB__max_depth': [3, 6, 10],  # 6
     'XGB__min_child_weight': [0.5, 1],  # 1
     'XGB__subsample': [0.7, 1],  # 1
-    'XGB__sampling_method': ['uniform', 'gradient_based'],  # uniform
+    'XGB__sampling_method': ['uniform'],  # uniform
 #     'XGB__colsample_bytree': [0.7],  # 1
     'XGB__lambda': [1],  # 1
     'XGB__alpha': [0],  # 0
     'XGB__tree_method': ['auto'],  # auto
-#     'XGB__scale_pos_weight': [0.3, 0.7, 1],  # 1
-    'XGB__predictor': ['cpu_predictor'],  # auto
+    'XGB__scale_pos_weight': [0.3, 0.7, 1],  # 1
+#     'XGB__predictor': ['cpu_predictor'],  # auto
     'XGB__num_parallel_tree': [1],  # 1
 }
 
@@ -468,50 +455,52 @@ model_xgb, y_pred_xgb = cls_models.checkmodel(
                                     randomized_search=False,
                                     nfolds=5,
                                     n_jobs=56,
-                                    save_pickle=True,
+                                    save_pickle=False,
                                     verbose=3
                                     )
 
 ```
 
-    Fitting 5 folds for each of 648 candidates, totalling 3240 fits
-    
-    
-
+    Fitting 5 folds for each of 324 candidates, totalling 1620 fits
     Mean cross-validated score of the best_estimator: 0.8518
-                Parameter    Tuned value
-    0               alpha              0
-    1                 eta            0.5
-    2               gamma              0
-    3              lambda              1
-    4           max_depth             10
-    5    min_child_weight            0.5
-    6   num_parallel_tree              1
-    7           predictor  cpu_predictor
-    8     sampling_method        uniform
-    9    scale_pos_weight            0.3
-    10          subsample            0.7
-    11        tree_method           auto
-    F1-score: 0.9095
-    Precision: 0.9625
-    Recall: 0.8681
-    Accuracy on train data: 1.0
-    Accuracy on test data: 0.9814
+                Parameter Tuned value
+    0               alpha           0
+    1                 eta         0.5
+    2               gamma           0
+    3              lambda           1
+    4           max_depth          10
+    5    min_child_weight         0.5
+    6   num_parallel_tree           1
+    7     sampling_method     uniform
+    8    scale_pos_weight         0.3
+    9           subsample         0.7
+    10        tree_method        auto 
+    
+                  precision    recall  f1-score   support
+    
+             0.0       0.98      1.00      0.99     14579
+             1.0       0.96      0.70      0.81       426
+             2.0       0.96      0.92      0.94      1112
+             3.0       0.92      0.74      0.82       145
+             4.0       0.99      0.98      0.98      1249
+    
+        accuracy                           0.98     17511
+       macro avg       0.96      0.87      0.91     17511
+    weighted avg       0.98      0.98      0.98     17511
+    
+    Wall time: 10h 23min 42s
     
 
 
     
-![png](README_files/README_20_3.png)
+![png](README_files/README_20_1.png)
     
 
-
-    Wall time: 15h 27min 11s
-    
 
 
 ```python
 # check the metrics on testing dataset
-mt.metrics_report(model_xgb[0], 'XGBoost', X_test, y_test, y_train, data='test')
+mt.metrics_report(model_xgb, 'XGBoost', X_test, y_test, y_train, data='test')
 ```
 
                   precision    recall  f1-score   support
@@ -1127,24 +1116,17 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
 ```
 
     Fitting 5 folds for each of 972 candidates, totalling 4860 fits
-    [LightGBM] [Warning] seed is set=42, random_state=42 will be ignored. Current value: seed=42
-    Mean cross-validated score of the best_estimator: 0.9156
-               Parameter Tuned value
-    0      boosting_type        gbdt
-    1       class_weight         0.1
-    2      learning_rate         0.1
-    3          max_depth          10
-    4  min_child_samples          20
-    5       n_estimators         100
-    6         num_leaves          31
-    7          reg_alpha        0.03
-    8         reg_lambda        0.07
-    9          subsample           1
-    F1-score: 0.7993
-    Precision: 0.7407
-    Recall: 0.9154
-    Accuracy on train data: 0.9833
-    Accuracy on test data: 0.9445
+                   Parameter Tuned value
+        0      boosting_type        gbdt
+        1       class_weight         balanced
+        2      learning_rate         0.05
+        3          max_depth          10
+        4  min_child_samples          20
+        5       n_estimators         100
+        6         num_leaves          31
+        7          reg_alpha        0.07
+        8         reg_lambda        0.03
+        9          subsample         0.7
     
 
 
@@ -1155,6 +1137,34 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
 
     Wall time: 14d 15h 45min 32s
     
+
+
+
+
+```python
+# check the metrics on validation dataset
+mt.metrics_report(loaded_model, 'LightGBM', X_val, y_val, y_train, data='validation')
+```
+
+                  precision    recall  f1-score   support
+    
+             0.0       0.99      0.97      0.98     14579
+             1.0       0.60      0.82      0.69       426
+             2.0       0.89      0.94      0.92      1112
+             3.0       0.60      0.81      0.69       145
+             4.0       0.98      0.98      0.98      1249
+    
+        accuracy                           0.97     17511
+       macro avg       0.81      0.91      0.85     17511
+    weighted avg       0.97      0.97      0.97     17511
+    
+    
+
+
+    
+![png](README_files/README_43_1.png)
+    
+
 
 
 ```python
@@ -1178,17 +1188,14 @@ mt.metrics_report(model_lgbm, 'LightGBM', X_test, y_test, y_train, data='test')
 
 
     
-![png](README_files/README_42_1.png)
+![png](README_files/README_44_1.png)
     
 
 
 __[top](#Contents)__ 
-
-<div class="alert-danger">
     
 ## SMOTE-ENN Method
 
-</div>
 
 
 Developed by Batista et al (2004), this method combines the SMOTE ability to generate synthetic examples for minority class and ENN ability to delete some observations from both classes that are identified as having different class between the observation’s class and its K-nearest neighbor majority class. The process of SMOTE-ENN can be explained as follows.
@@ -1309,13 +1316,13 @@ model_svm, y_pred_svm = cls_models.checkmodel(
 
 
     
-![png](README_files/README_46_1.png)
+![png](README_files/README_48_1.png)
     
 
 
 
     
-![png](README_files/README_46_2.png)
+![png](README_files/README_48_2.png)
     
 
 
@@ -1353,13 +1360,13 @@ mt.metrics_report(model_svm[0], 'SVM', X_test, y_test, y_train, data='test')
 
 
     
-![png](README_files/README_47_1.png)
+![png](README_files/README_49_1.png)
     
 
 
 
     
-![png](README_files/README_47_2.png)
+![png](README_files/README_49_2.png)
     
 
 
@@ -1447,7 +1454,7 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
 
 
     
-![png](README_files/README_49_1.png)
+![png](README_files/README_51_1.png)
     
 
 
@@ -1473,7 +1480,7 @@ mt.metrics_report(model_lgbm, 'LGBMClassifier', X_test, y_test, y_train, data='t
 
 
     
-![png](README_files/README_50_1.png)
+![png](README_files/README_52_1.png)
     
 
 
@@ -1481,24 +1488,43 @@ __[top](#Contents)__
 
 # Summary of the results
 
+
 ## Metrics over all classes
-
-| Model                 | F1 score | Precision | Recall  | Accuracy |
-|-----------------------|----------|-----------|---------|----------|
-| SVM                   | 0.8157   | 0.7602    | 0.9312  | 0.9568   |
-| Light GBM             | 0.8264   | 0.7695    | 0.9142  | 0.9529   |
-| Random Forest         | 0.7957   | 0.7701    | 0.8810  | 0.9509   |
-| XGBoost               | 0.9095   | 0.9625    | 0.8681  | 0.9814   |
-| kNN                   | 0.8893   | 0.9254    | 0.8596  | 0.9769   |
-| Gradient Boosting     | 0.8581   | 0.9073    | 0.8192  | 0.9718   |
-| AdaBoost	            | 0.4422   | 0.4277    | 0.6269  | 0.5853   |
-
 
 - We use a ___macro-average___ which computes the metric independently for each class and then takes the average (hence treating all classes equally). Macro-average leads to a lower result since it doesn't account for the number of samples in the minority class.  
 
 
-- ___Model performance:___
-    - SVM, Light GBM, Random Forests, XGBoost show the best results among all tested models. However, confusion matrices show that the models have problems with classifying labels 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat).
+### Original dataset
+<div class="alert-success"></div>
+    
+| Model                 | F1 score | Precision | Recall  | Accuracy | AUC macro |
+|-----------------------|----------|-----------|---------|----------|-----------|
+| __SVM__               | 0.8157   | 0.7602    | __0.9312__  | 0.9568   | 0.9489 |
+| __Light GBM__         | 0.8264   | 0.7695    | __0.9142__  | 0.9529   | 0.9460 |
+| Random Forest         | 0.7957   | 0.7701    | 0.8810  | 0.9509   | 0.9208 |
+| XGBoost               | 0.9095   | 0.9625    | 0.8681  | 0.9814   | 0.9152 |
+| kNN                   | 0.8893   | 0.9254    | 0.8596  | 0.9769   | 0.9117 |
+| Gradient Boosting     | 0.8581   | 0.9073    | 0.8192  | 0.9718   | 0.8891 |
+| AdaBoost	            | 0.4422   | 0.4277    | 0.6269  | 0.5853   | 0.7611 |
+
+
+### SMOTE Tomek-Links resampling
+
+| Model                 | F1 score | Precision | Recall  | Accuracy | AUC macro |
+|-----------------------|----------|-----------|---------|----------|-----------|
+| SVM                   | 0.7690   | 0.7130    | 0.9141  | 0.9381   | 0.9471 |
+| Light GBM             | 0.8393   | 0.7966    | 0.9025  | 0.9629   | 0.9430 |
+
+
+### SMOTE ENN resampling
+
+| Model                 | F1 score | Precision | Recall  | Accuracy | AUC macro |
+|-----------------------|----------|-----------|---------|----------|-----------|
+| SVM                   | 0.7596   | 0.7006    | 0.9144  | 0.9323   | 0.9470 |
+| Light GBM             | 0.9006   | 0.8955    | 0.9061  | 0.9798   | 0.9470 |
+
+
+
 
 ## Metrics per class for original dataset
 
@@ -1514,6 +1540,11 @@ __[top](#Contents)__
 
 -  __[SVM](#SVM)__  
 
+              Parameter Tuned value
+        0             C           1
+        1  class_weight    balanced
+        2         gamma         0.5
+
 __Validation dataset__
 
                           precision    recall  f1-score   support
@@ -1527,7 +1558,11 @@ __Validation dataset__
                macro avg       0.76      0.93      0.82     17511
             weighted avg       0.97      0.96      0.96     17511
     
-<img src="./Reports/Original/classification_report_validation/SVM.png" width="350"/>
+
+<p float="left">
+<img src="./Reports/Original/classification_report_validation/SVM.png" width="300"/> 
+<img src="./Reports/Original/classification_report_validation/SVM_ROC.png" width="350"/>
+</p>
 
 
 __Testing dataset__  
@@ -1543,10 +1578,28 @@ __Testing dataset__
                macro avg       0.75      0.91      0.80     21892
             weighted avg       0.97      0.95      0.96     21892
 
-<img src="./Reports/Original/classification_report_test/SVM.png" width="350"/>
+
+<p float="left">
+<img src="./Reports/Original/classification_report_test/SVM.png" width="300"/>
+<img src="./Reports/Original/classification_report_test/SVM_ROC.png" width="350"/>
+</p>
 
 
 - __[Light GBM](#LightGBM)__ 
+
+
+                   Parameter Tuned value
+        0      boosting_type        gbdt
+        1       class_weight    balanced
+        2      learning_rate        0.05
+        3          max_depth          -1
+        4  min_child_samples          20
+        5       n_estimators         100
+        6         num_leaves          31
+        7          reg_alpha        0.07
+        8         reg_lambda           0
+        9          subsample           1
+
 
 __Validation dataset__
 
@@ -1561,7 +1614,12 @@ __Validation dataset__
                macro avg       0.77      0.91      0.83     17511
             weighted avg       0.96      0.95      0.96     17511
             
-<img src="./Reports/Original/classification_report_validation/Light GBM.png" width="350"/>
+
+<p float="left">
+<img src="./Reports/Original/classification_report_validation/LGBMClassifier.png" width="300"/>
+<img src="./Reports/Original/classification_report_validation/LGBMClassifier_ROC.png" width="350"/>
+</p>
+
 
 __Testing dataset__ 
 
@@ -1576,10 +1634,32 @@ __Testing dataset__
                macro avg       0.75      0.91      0.81     21892
             weighted avg       0.96      0.95      0.95     21892
 
-<img src="./Reports/Original/classification_report_test/Light GBM.png" width="350"/>
+
+<p float="left">
+<img src="./Reports/Original/classification_report_test/LGBMClassifier.png" width="300"/>
+<img src="./Reports/Original/classification_report_test/LGBMClassifier_ROC.png" width="350"/>
+</p>
+
+
 
 
 - __[Random Forest](#Random-Forest)__ 
+
+
+                           Parameter Tuned value
+        0                  bootstrap        True
+        1               class_weight    balanced
+        2                  criterion        gini
+        3                  max_depth          10
+        4             max_leaf_nodes        None
+        5                max_samples        None
+        6      min_impurity_decrease           0
+        7           min_samples_leaf           5
+        8          min_samples_split           2
+        9   min_weight_fraction_leaf           0
+        10              n_estimators         100
+        11                 oob_score        True
+
 
 __Validation dataset__
 
@@ -1594,7 +1674,12 @@ __Validation dataset__
                macro avg       0.77      0.88      0.80     17511
             weighted avg       0.96      0.95      0.96     17511
 
-<img src="./Reports/Original/classification_report_validation/RandomForest.png" width="350"/>
+
+<p float="left">
+<img src="./Reports/Original/classification_report_validation/RandomForest.png" width="300"/>
+<img src="./Reports/Original/classification_report_validation/RandomForest_ROC.png" width="350"/>
+</p>
+
 
 __Testing dataset__  
 
@@ -1609,10 +1694,30 @@ __Testing dataset__
                macro avg       0.76      0.87      0.78     21892
             weighted avg       0.96      0.95      0.95     21892
 
-<img src="./Reports/Original/classification_report_test/RandomForest.png" width="350"/>
+
+<p float="left">
+<img src="./Reports/Original/classification_report_test/RandomForest.png" width="300"/>
+<img src="./Reports/Original/classification_report_test/RandomForest_ROC.png" width="350"/>
+</p>
+
 
 
 - __[XGBoost](#XGBoost)__ 
+
+
+                    Parameter Tuned value
+        0               alpha           0
+        1                 eta         0.5
+        2               gamma           0
+        3              lambda           1
+        4           max_depth          10
+        5    min_child_weight         0.5
+        6   num_parallel_tree           1
+        7     sampling_method     uniform
+        8    scale_pos_weight         0.3
+        9           subsample         0.7
+        10        tree_method        auto 
+
 
 __Validation dataset__
 
@@ -1627,7 +1732,12 @@ __Validation dataset__
                macro avg       0.96      0.87      0.91     17511
             weighted avg       0.98      0.98      0.98     17511     
 
-<img src="./Reports/Original/classification_report_validation/XGBoost.png" width="350"/>
+
+<p float="left">
+<img src="./Reports/Original/classification_report_validation/XGBoost.png" width="300"/>
+<img src="./Reports/Original/classification_report_validation/XGBoost_ROC.png" width="350"/>
+</p>
+
 
 __Testing dataset__  
 
@@ -1643,10 +1753,19 @@ __Testing dataset__
             weighted avg       0.98      0.98      0.98     21892
 
 
-<img src="./Reports/Original/classification_report_test/XGBoost.png" width="350"/>
+<p float="left">
+<img src="./Reports/Original/classification_report_test/XGBoost.png" width="300"/>
+<img src="./Reports/Original/classification_report_test/XGBoost_ROC.png" width="350"/>
+</p>
+
 
 
 - __[K-Nearest Neighbors](#K-Nearest-Neighbors)__ 
+
+             Parameter Tuned value
+        0  n_neighbors           4
+        1            p           1
+        2      weights    distance
 
 __Validation dataset__
 
@@ -1661,7 +1780,12 @@ __Validation dataset__
                macro avg       0.93      0.86      0.89     17511
             weighted avg       0.98      0.98      0.98     17511
             
-<img src="./Reports/Original/classification_report_validation/KNN.png" width="350"/>
+
+<p float="left">
+<img src="./Reports/Original/classification_report_validation/KNN.png" width="300"/>
+<img src="./Reports/Original/classification_report_validation/KNN_ROC.png" width="350"/>
+</p>
+
 
 __Testing dataset__  
 
@@ -1676,10 +1800,32 @@ __Testing dataset__
                macro avg       0.92      0.84      0.88     21892
             weighted avg       0.98      0.98      0.98     21892
 
-<img src="./Reports/Original/classification_report_test/KNN.png" width="350"/>
+
+<p float="left">
+<img src="./Reports/Original/classification_report_test/KNN.png" width="300"/>
+<img src="./Reports/Original/classification_report_test/KNN_ROC.png" width="350"/>
+</p>
+
 
 
 - __[Gradient Boosting](#Gradient-Boosting)__ 
+
+
+                           Parameter   Tuned value
+        0                  criterion  friedman_mse
+        1              learning_rate           0.1
+        2                       loss      deviance
+        3                  max_depth             5
+        4             max_leaf_nodes          None
+        5      min_impurity_decrease             0
+        6           min_samples_leaf             1
+        7          min_samples_split             2
+        8   min_weight_fraction_leaf             0
+        9               n_estimators           500
+        10          n_iter_no_change             5
+        11                 subsample             1
+        12       validation_fraction           0.1
+
 
 __Validation dataset__
 
@@ -1695,7 +1841,12 @@ __Validation dataset__
                macro avg       0.91      0.82      0.86     17511
             weighted avg       0.97      0.97      0.97     17511
 
-<img src="./Reports/Original/classification_report_validation/GradientBoost.png" width="350"/>
+
+<p float="left">
+<img src="./Reports/Original/classification_report_validation/GradientBoost.png" width="300"/>
+<img src="./Reports/Original/classification_report_validation/GradientBoost_ROC.png" width="350"/>
+</p>
+
 
 __Testing dataset__  
 
@@ -1710,10 +1861,22 @@ __Testing dataset__
                macro avg       0.88      0.81      0.84     21892
             weighted avg       0.97      0.97      0.97     21892    
 
-<img src="./Reports/Original/classification_report_test/GradientBoost.png" width="350"/>
+
+<p float="left">
+<img src="./Reports/Original/classification_report_test/GradientBoost.png" width="300"/>
+<img src="./Reports/Original/classification_report_test/GradientBoost_ROC.png" width="350"/>
+</p>
+
 
 
 - __[AdaBoost](#AdaBoost)__ 
+
+
+                Parameter Tuned value
+        0  base_estimator        None
+        1   learning_rate           1
+        2    n_estimators         500
+
 
 __Validation dataset__
 
@@ -1728,7 +1891,12 @@ __Validation dataset__
                macro avg       0.43      0.63      0.44     17511
             weighted avg       0.86      0.59      0.67     17511         
              
-<img src="./Reports/Original/classification_report_validation/AdaBoost.png" width="350"/>
+
+<p float="left">
+<img src="./Reports/Original/classification_report_validation/AdaBoost.png" width="300"/>
+<img src="./Reports/Original/classification_report_validation/AdaBoost_ROC.png" width="350"/>
+</p>
+
 
 __Testing dataset__  
 
@@ -1743,7 +1911,12 @@ __Testing dataset__
                macro avg       0.43      0.63      0.44     21892
             weighted avg       0.87      0.60      0.68     21892
 
-<img src="./Reports/Original/classification_report_test/AdaBoost.png" width="350"/>
+
+<p float="left">
+<img src="./Reports/Original/classification_report_test/AdaBoost.png" width="300"/>
+<img src="./Reports/Original/classification_report_test/AdaBoost_ROC.png" width="350"/>
+</p>
+
 
 
 __[top](#Contents)__ 
@@ -1753,10 +1926,14 @@ __[top](#Contents)__
 ## Metrics per class for resampled dataset
 
 
-
-
-
 - __[SMOTE-Tomek Links: SVM](#SMOTE-Tomek-Links:-SVM)__ 
+
+
+              Parameter Tuned value
+        0             C           1
+        1  class_weight    balanced
+        2         gamma         0.1
+
 
 __Validation dataset__
 
@@ -1772,8 +1949,11 @@ __Validation dataset__
             weighted avg       0.96      0.94      0.95     17511
 
 
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks.png" width="350"/>
 
+<p float="left">
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks_ROC.png" width="350"/>
+</p>
 
 
 __Testing dataset__  
@@ -1790,28 +1970,49 @@ __Testing dataset__
             weighted avg       0.96      0.94      0.95     21892
 
 
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks.png" width="350"/>
+
+<p float="left">
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks_ROC.png" width="350"/>
+</p>
 
 
 
    
 - __[SMOTE-Tomek Links: LightGBM](#SMOTE-Tomek-Links:-LightGBM)__ 
 
+
+                   Parameter Tuned value
+        0      boosting_type        gbdt
+        1       class_weight         balanced
+        2      learning_rate         0.05
+        3          max_depth          10
+        4  min_child_samples          20
+        5       n_estimators         100
+        6         num_leaves          31
+        7          reg_alpha        0.07
+        8         reg_lambda        0.03
+        9          subsample         0.7
+
+
 __Validation dataset__
-
+  
                           precision    recall  f1-score   support
-                     0.0       0.99      0.94      0.97     14579
-                     1.0       0.42      0.88      0.56       426
-                     2.0       0.88      0.93      0.91      1112
-                     3.0       0.44      0.83      0.58       145
-                     4.0       0.97      0.98      0.98      1249
+                     0.0       0.99      0.97      0.98     14579
+                     1.0       0.60      0.82      0.69       426
+                     2.0       0.89      0.94      0.92      1112
+                     3.0       0.60      0.81      0.69       145
+                     4.0       0.98      0.98      0.98      1249
 
-                accuracy                           0.94     17511
-               macro avg       0.74      0.92      0.80     17511
-            weighted avg       0.96      0.94      0.95     17511
+                accuracy                           0.97     17511
+               macro avg       0.81      0.91      0.85     17511
+            weighted avg       0.97      0.97      0.97     17511
 
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks.png" width="350"/>
 
+<p float="left">
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks_ROC.png" width="350"/>
+</p>
 
 
 __Testing dataset__  
@@ -1829,71 +2030,134 @@ __Testing dataset__
             weighted avg       0.96      0.94      0.95     21892
 
 
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks.png" width="350"/>
 
+<p float="left">
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks_ROC.png" width="350"/>
+</p>
 
 
 
 
 - __[SMOTE-ENN: SVM](#SMOTE-ENN:-SVM)__ 
 
-    
+
+              Parameter Tuned value
+        0             C           1
+        1  class_weight    balanced
+        2         gamma         0.1 
+
+
 __Validation dataset__
 
-    
-<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn.png" width="350"/>
+
+                          precision    recall  f1-score   support
+                     0.0       0.99      0.93      0.96     14579
+                     1.0       0.43      0.87      0.57       426
+                     2.0       0.86      0.93      0.89      1112
+                     3.0       0.29      0.92      0.44       145
+                     4.0       0.97      0.98      0.97      1249
+
+                accuracy                           0.94     17511
+               macro avg       0.71      0.93      0.77     17511
+            weighted avg       0.96      0.94      0.94     17511
+
+
+
+<p float="left">
+<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn_ROC.png" width="350"/>
+</p>
 
    
 __Testing dataset__  
     
 
-<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn.png" width="350"/>
+                          precision    recall  f1-score   support
+                     0.0       0.99      0.93      0.96     18118
+                     1.0       0.40      0.83      0.54       556
+                     2.0       0.87      0.94      0.90      1448
+                     3.0       0.28      0.90      0.43       162
+                     4.0       0.97      0.98      0.97      1608
+
+                accuracy                           0.93     21892
+               macro avg       0.70      0.91      0.76     21892
+            weighted avg       0.96      0.93      0.94     21892
+
+
+<p float="left">
+<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn_ROC.png" width="350"/>
+</p>
 
     
 - __[SMOTE-ENN: LightGBM](#SMOTE-ENN:-LightGBM)__ 
 
+
+                   Parameter Tuned value
+        0      boosting_type        gbdt
+        1       class_weight    balanced
+        2      learning_rate         0.5
+        3          max_depth          -1
+        4  min_child_samples          20
+        5       n_estimators         500
+        6         num_leaves          31
+        7          reg_alpha           0
+        8         reg_lambda        0.03
+        9          subsample           1 
+
     
 __Validation dataset__
 
-    
-<img src="./Reports/SMOTE ENN resampling/report_validation/LGBMClassifier_smoteenn.png" width="350"/>
 
-    
+                          precision    recall  f1-score   support
+                     0.0       0.99      0.99      0.99     14579
+                     1.0       0.81      0.82      0.81       426
+                     2.0       0.93      0.96      0.94      1112
+                     3.0       0.83      0.82      0.82       145
+                     4.0       0.98      0.99      0.98      1249
+
+                accuracy                           0.98     17511
+               macro avg       0.91      0.92      0.91     17511
+            weighted avg       0.98      0.98      0.98     17511
+
+
+
+<p float="left">
+<img src="./Reports/SMOTE ENN resampling/report_validation/LGBMClassifier_smoteenn.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/LGBMClassifier_smoteenn_ROC.png" width="350"/>
+</p>
+
+
 __Testing dataset__  
 
-    
-<img src="./Reports/SMOTE ENN resampling/report_test/LGBMClassifier_smoteenn.png" width="350"/>
 
+                          precision    recall  f1-score   support
+                     0.0       0.99      0.99      0.99     18118
+                     1.0       0.80      0.79      0.80       556
+                     2.0       0.95      0.95      0.95      1448
+                     3.0       0.76      0.81      0.79       162
+                     4.0       0.98      0.98      0.98      1608
 
-<div class="alert-danger">
-</div>
-
-
-
-
-<!-- |               | Precision | Recall  | f1-score | Support |
-|---------------|----------|----------|----------|---------|
-|    accuracy   |          |          |    0.95  |   17511 |
-|   macro avg   |    0.77  |    0.91  |    0.83  |   17511 |
-|weighted avg   |    0.96  |    0.95  |    0.96  |   17511 |
- -->
+                accuracy                           0.98     21892
+               macro avg       0.90      0.91      0.90     21892
+            weighted avg       0.98      0.98      0.98     21892
 
 
 
-<!-- labels = ['0 (N - Normal beat)',
-          '1 (S - Supraventricular premature beat)',
-          '2 (V - Premature ventricular contraction)',
-          '3 (F - Fusion of ventricular and normal beat)',
-          '4 (Q - Unclassifiable beat)'] -->
+
+<p float="left">
+<img src="./Reports/SMOTE ENN resampling/report_test/LGBMClassifier_smoteenn.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/LGBMClassifier_smoteenn_ROC.png" width="350"/>
+</p>
+
+
 
 __[top](#Contents)__  
 
 # TO DO
 
 - Fine tuning
-- AUC for each class
 - Precision-recall curve
-- compare resampled and original data
-- hyperparameter table
 
 __[top](#Contents)__  
