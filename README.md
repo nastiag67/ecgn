@@ -1561,7 +1561,7 @@ __Validation dataset__
 
 <p float="left">
 <img src="./Reports/Original/classification_report_validation/SVM.png" width="300"/> 
-<img src="./Reports/Original/classification_report_validation/SVM_ROC.png" width="300"/>
+<img src="./Reports/Original/classification_report_validation/SVM_ROC.png" width="350"/>
 </p>
 
 
@@ -1581,7 +1581,7 @@ __Testing dataset__
 
 <p float="left">
 <img src="./Reports/Original/classification_report_test/SVM.png" width="300"/>
-<img src="./Reports/Original/classification_report_test/SVM_ROC.png" width="300"/>
+<img src="./Reports/Original/classification_report_test/SVM_ROC.png" width="350"/>
 </p>
 
 
@@ -1617,7 +1617,7 @@ __Validation dataset__
 
 <p float="left">
 <img src="./Reports/Original/classification_report_validation/LGBMClassifier.png" width="300"/>
-<img src="./Reports/Original/classification_report_validation/LGBMClassifier_ROC.png" width="300"/>
+<img src="./Reports/Original/classification_report_validation/LGBMClassifier_ROC.png" width="350"/>
 </p>
 
 
@@ -1637,7 +1637,7 @@ __Testing dataset__
 
 <p float="left">
 <img src="./Reports/Original/classification_report_test/LGBMClassifier.png" width="300"/>
-<img src="./Reports/Original/classification_report_test/LGBMClassifier_ROC.png" width="300"/>
+<img src="./Reports/Original/classification_report_test/LGBMClassifier_ROC.png" width="350"/>
 </p>
 
 
@@ -1677,7 +1677,7 @@ __Validation dataset__
 
 <p float="left">
 <img src="./Reports/Original/classification_report_validation/RandomForest.png" width="300"/>
-<img src="./Reports/Original/classification_report_validation/RandomForest_ROC.png" width="300"/>
+<img src="./Reports/Original/classification_report_validation/RandomForest_ROC.png" width="350"/>
 </p>
 
 
@@ -1697,7 +1697,7 @@ __Testing dataset__
 
 <p float="left">
 <img src="./Reports/Original/classification_report_test/RandomForest.png" width="300"/>
-<img src="./Reports/Original/classification_report_test/RandomForest_ROC.png" width="300"/>
+<img src="./Reports/Original/classification_report_test/RandomForest_ROC.png" width="350"/>
 </p>
 
 
@@ -1735,7 +1735,7 @@ __Validation dataset__
 
 <p float="left">
 <img src="./Reports/Original/classification_report_validation/XGBoost.png" width="300"/>
-<img src="./Reports/Original/classification_report_validation/XGBoost_ROC.png" width="300"/>
+<img src="./Reports/Original/classification_report_validation/XGBoost_ROC.png" width="350"/>
 </p>
 
 
@@ -1755,7 +1755,7 @@ __Testing dataset__
 
 <p float="left">
 <img src="./Reports/Original/classification_report_test/XGBoost.png" width="300"/>
-<img src="./Reports/Original/classification_report_test/XGBoost_ROC.png" width="300"/>
+<img src="./Reports/Original/classification_report_test/XGBoost_ROC.png" width="350"/>
 </p>
 
 
@@ -1783,7 +1783,7 @@ __Validation dataset__
 
 <p float="left">
 <img src="./Reports/Original/classification_report_validation/KNN.png" width="300"/>
-<img src="./Reports/Original/classification_report_validation/KNN_ROC.png" width="300"/>
+<img src="./Reports/Original/classification_report_validation/KNN_ROC.png" width="350"/>
 </p>
 
 
@@ -1803,7 +1803,7 @@ __Testing dataset__
 
 <p float="left">
 <img src="./Reports/Original/classification_report_test/KNN.png" width="300"/>
-<img src="./Reports/Original/classification_report_test/KNN_ROC.png" width="300"/>
+<img src="./Reports/Original/classification_report_test/KNN_ROC.png" width="350"/>
 </p>
 
 
@@ -1844,7 +1844,7 @@ __Validation dataset__
 
 <p float="left">
 <img src="./Reports/Original/classification_report_validation/GradientBoost.png" width="300"/>
-<img src="./Reports/Original/classification_report_validation/GradientBoost_ROC.png" width="300"/>
+<img src="./Reports/Original/classification_report_validation/GradientBoost_ROC.png" width="350"/>
 </p>
 
 
@@ -1864,7 +1864,7 @@ __Testing dataset__
 
 <p float="left">
 <img src="./Reports/Original/classification_report_test/GradientBoost.png" width="300"/>
-<img src="./Reports/Original/classification_report_test/GradientBoost_ROC.png" width="300"/>
+<img src="./Reports/Original/classification_report_test/GradientBoost_ROC.png" width="350"/>
 </p>
 
 
@@ -1894,7 +1894,7 @@ __Validation dataset__
 
 <p float="left">
 <img src="./Reports/Original/classification_report_validation/AdaBoost.png" width="300"/>
-<img src="./Reports/Original/classification_report_validation/AdaBoost_ROC.png" width="300"/>
+<img src="./Reports/Original/classification_report_validation/AdaBoost_ROC.png" width="350"/>
 </p>
 
 
@@ -1914,7 +1914,7 @@ __Testing dataset__
 
 <p float="left">
 <img src="./Reports/Original/classification_report_test/AdaBoost.png" width="300"/>
-<img src="./Reports/Original/classification_report_test/AdaBoost_ROC.png" width="300"/>
+<img src="./Reports/Original/classification_report_test/AdaBoost_ROC.png" width="350"/>
 </p>
 
 
@@ -1952,7 +1952,7 @@ __Validation dataset__
 
 <p float="left">
 <img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks_ROC.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks_ROC.png" width="350"/>
 </p>
 
 
@@ -1973,7 +1973,7 @@ __Testing dataset__
 
 <p float="left">
 <img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks_ROC.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks_ROC.png" width="350"/>
 </p>
 
 
@@ -2011,7 +2011,7 @@ __Validation dataset__
 
 <p float="left">
 <img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks_ROC.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks_ROC.png" width="350"/>
 </p>
 
 
@@ -2033,7 +2033,7 @@ __Testing dataset__
 
 <p float="left">
 <img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks_ROC.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks_ROC.png" width="350"/>
 </p>
 
 
@@ -2066,7 +2066,7 @@ __Validation dataset__
 
 <p float="left">
 <img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn_ROC.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn_ROC.png" width="350"/>
 </p>
 
    
@@ -2087,7 +2087,7 @@ __Testing dataset__
 
 <p float="left">
 <img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn_ROC.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn_ROC.png" width="350"/>
 </p>
 
     
@@ -2125,7 +2125,7 @@ __Validation dataset__
 
 <p float="left">
 <img src="./Reports/SMOTE ENN resampling/report_validation/LGBMClassifier_smoteenn.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_validation/LGBMClassifier_smoteenn_ROC.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/LGBMClassifier_smoteenn_ROC.png" width="350"/>
 </p>
 
 
@@ -2148,7 +2148,7 @@ __Testing dataset__
 
 <p float="left">
 <img src="./Reports/SMOTE ENN resampling/report_test/LGBMClassifier_smoteenn.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_test/LGBMClassifier_smoteenn_ROC.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/LGBMClassifier_smoteenn_ROC.png" width="350"/>
 </p>
 
 
