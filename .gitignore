@@ -22,6 +22,7 @@ temp_report_test
 temp_report_validation
 temp_pickle_models
 pickle models with size more than 100MB
+pickle_models*
 
 ######################################################################################
 # Byte-compiled / optimized / DLL files
