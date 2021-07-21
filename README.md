@@ -2162,39 +2162,7 @@ __Testing dataset__
 __[top](#Contents)__  
 
 
-```python
-import pickle
-reload(mt)
-y_test_dummy = np.array(pd.get_dummies(y_test))
-y_val_dummy = np.array(pd.get_dummies(y_val))
-y_train_dummy = np.array(pd.get_dummies(y_train))
 
-# lst_models = ['LightGBM', 'AdaBoost', 'GradientBoost', 'KNN', 'RandomForest', 'XGBoost', 'SVM']
-# lst_models = ['SVM']
-lst_models = ['LightGBM']
-folder = "./Reports/SMOTE Tomek-Links resampling/pickle_models/"
-
-roc = mt.ROCcurve_multiclass
-pr = mt.PR_multiclass
-
-for name in lst_models:
-    loaded_model = pickle.load(open(f"{folder}{name}.sav", 'rb'))
-    mt.compare_models(loaded_model, name, X_val, y_val_dummy, y_train_dummy, roc, pr, proba=True, data='validation')
-```
-
-    ROC-AUC score: 0.9904
-    
-
-
-    
-![png](README_files/README_54_1.png)
-    
-
-
-
-    
-![png](README_files/README_54_2.png)
-    
 
 
 # TO DO
