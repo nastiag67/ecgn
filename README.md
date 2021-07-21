@@ -197,6 +197,11 @@ So, we need to improve __recall__, the ability of a model to find all relevant c
 
 A __macro-average__ will compute the metric independently for each class and then take the average (hence treating all classes equally), whereas a __micro-average__ will aggregate the contributions of all classes to compute the average metric. Macro leads to a lower result since it doesn't account for the number of samples in the minority class.
 
+We will split the dataset into 3 subsets:
+- training (70 043, 187);
+- validation (17 511, 187);
+- testing (21 892, 187).
+
 
 ```python
 #train validation split
