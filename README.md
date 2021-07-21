@@ -970,7 +970,7 @@ from imblearn.under_sampling import TomekLinks
 from imblearn.combine import SMOTETomek
 ```
 
-### SMOTE-Tomek Links: SVM
+### SMOTE-Tomek Links for SVM
 
 
 ```python
@@ -1063,7 +1063,7 @@ mt.metrics_report(model_svm, 'SVM', X_test, y_test, y_train, data='test')
 
 __[top](#Contents)__  
 
-### SMOTE-Tomek Links: LightGBM
+### SMOTE-Tomek Links for LightGBM
 
 
 ```python
@@ -1116,17 +1116,24 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
 ```
 
     Fitting 5 folds for each of 972 candidates, totalling 4860 fits
-                   Parameter Tuned value
-        0      boosting_type        gbdt
-        1       class_weight         balanced
-        2      learning_rate         0.05
-        3          max_depth          10
-        4  min_child_samples          20
-        5       n_estimators         100
-        6         num_leaves          31
-        7          reg_alpha        0.07
-        8         reg_lambda        0.03
-        9          subsample         0.7
+    [LightGBM] [Warning] seed is set=42, random_state=42 will be ignored. Current value: seed=42
+    Mean cross-validated score of the best_estimator: 0.9156
+               Parameter Tuned value
+    0      boosting_type        gbdt
+    1       class_weight         0.1
+    2      learning_rate         0.1
+    3          max_depth          10
+    4  min_child_samples          20
+    5       n_estimators         100
+    6         num_leaves          31
+    7          reg_alpha        0.03
+    8         reg_lambda        0.07
+    9          subsample           1
+    F1-score: 0.7993
+    Precision: 0.7407
+    Recall: 0.9154
+    Accuracy on train data: 0.9833
+    Accuracy on test data: 0.9445
     
 
 
@@ -1138,6 +1145,19 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
     Wall time: 14d 15h 45min 32s
     
 
+Correct hyperparameters:
+
+                   Parameter Tuned value
+        0      boosting_type        gbdt
+        1       class_weight         balanced
+        2      learning_rate         0.05
+        3          max_depth          10
+        4  min_child_samples          20
+        5       n_estimators         100
+        6         num_leaves          31
+        7          reg_alpha        0.07
+        8         reg_lambda        0.03
+        9          subsample         0.7
 
 
 
@@ -1230,7 +1250,7 @@ X.info()
 
 __[top](#Contents)__  
 
-### SMOTE-ENN: SVM
+### SMOTE-ENN for SVM
 
 
 ```python
@@ -1273,30 +1293,13 @@ model_svm, y_pred_svm = cls_models.checkmodel(
 ```
 
     Fitting 5 folds for each of 15 candidates, totalling 75 fits
-    Fitting 5 folds for each of 15 candidates, totalling 75 fits
+   
     Mean cross-validated score of the best_estimator: 0.9118
           Parameter Tuned value
     0             C           1
     1  class_weight    balanced
     2         gamma         0.1 
     
-    Mean cross-validated score of the best_estimator: 0.9118
-          Parameter Tuned value
-    0             C           1
-    1  class_weight    balanced
-    2         gamma         0.1 
-    
-                  precision    recall  f1-score   support
-    
-             0.0       0.99      0.93      0.96     14579
-             1.0       0.43      0.87      0.57       426
-             2.0       0.86      0.93      0.89      1112
-             3.0       0.29      0.92      0.44       145
-             4.0       0.97      0.98      0.97      1249
-    
-        accuracy                           0.94     17511
-       macro avg       0.71      0.93      0.77     17511
-    weighted avg       0.96      0.94      0.94     17511
     
                   precision    recall  f1-score   support
     
@@ -1311,12 +1314,7 @@ model_svm, y_pred_svm = cls_models.checkmodel(
     weighted avg       0.96      0.94      0.94     17511
     
     Wall time: 8h 44min 17s
-    Wall time: 8h 44min 17s
-    
 
-
-    
-![png](README_files/README_48_1.png)
     
 
 
@@ -1332,17 +1330,6 @@ model_svm, y_pred_svm = cls_models.checkmodel(
 mt.metrics_report(model_svm[0], 'SVM', X_test, y_test, y_train, data='test')
 ```
 
-                  precision    recall  f1-score   support
-    
-             0.0       0.99      0.93      0.96     18118
-             1.0       0.40      0.83      0.54       556
-             2.0       0.87      0.94      0.90      1448
-             3.0       0.28      0.90      0.43       162
-             4.0       0.97      0.98      0.97      1608
-    
-        accuracy                           0.93     21892
-       macro avg       0.70      0.91      0.76     21892
-    weighted avg       0.96      0.93      0.94     21892
     
                   precision    recall  f1-score   support
     
@@ -1356,11 +1343,6 @@ mt.metrics_report(model_svm[0], 'SVM', X_test, y_test, y_train, data='test')
        macro avg       0.70      0.91      0.76     21892
     weighted avg       0.96      0.93      0.94     21892
     
-    
-
-
-    
-![png](README_files/README_49_1.png)
     
 
 
@@ -1372,7 +1354,7 @@ mt.metrics_report(model_svm[0], 'SVM', X_test, y_test, y_train, data='test')
 
 __[top](#Contents)__  
 
-### SMOTE-ENN: LightGBM
+### SMOTE-ENN for LightGBM
 
 
 ```python
@@ -1497,7 +1479,7 @@ __[top](#Contents)__
 ### Original dataset
 <div class="alert-success"></div>
     
-| Model                 | F1 score | Precision | Recall  | Accuracy | AUC macro |
+| Model                 | F1 score | Precision | Recall  | Accuracy | AUC |
 |-----------------------|----------|-----------|---------|----------|-----------|
 | __SVM__               | 0.8157   | 0.7602    | __0.9312__  | 0.9568   | 0.9489 |
 | __Light GBM__         | 0.8264   | 0.7695    | __0.9142__  | 0.9529   | 0.9460 |
@@ -1510,7 +1492,7 @@ __[top](#Contents)__
 
 ### SMOTE Tomek-Links resampling
 
-| Model                 | F1 score | Precision | Recall  | Accuracy | AUC macro |
+| Model                 | F1 score | Precision | Recall  | Accuracy | AUC |
 |-----------------------|----------|-----------|---------|----------|-----------|
 | SVM                   | 0.7690   | 0.7130    | 0.9141  | 0.9381   | 0.9471 |
 | Light GBM             | 0.8393   | 0.7966    | 0.9025  | 0.9629   | 0.9430 |
@@ -1518,10 +1500,10 @@ __[top](#Contents)__
 
 ### SMOTE ENN resampling
 
-| Model                 | F1 score | Precision | Recall  | Accuracy | AUC macro |
+| Model                 | F1 score | Precision | Recall  | Accuracy | AUC |
 |-----------------------|----------|-----------|---------|----------|-----------|
 | SVM                   | 0.7596   | 0.7006    | 0.9144  | 0.9323   | 0.9470 |
-| Light GBM             | 0.9006   | 0.8955    | 0.9061  | 0.9798   | 0.9470 |
+| Light GBM             | 0.9006   | 0.8955    | 0.9061  | __0.9798__   | 0.9470 |
 
 
 
@@ -1560,8 +1542,9 @@ __Validation dataset__
     
 
 <p float="left">
-<img src="./Reports/Original/classification_report_validation/SVM.png" width="300"/> 
-<img src="./Reports/Original/classification_report_validation/SVM_ROC.png" width="350"/>
+<img src="./Reports/Original/report_validation/SVM.png" width="250"/>
+<img src="./Reports/Original/report_validation/SVM_ROC.png" width="270"/>
+<img src="./Reports/Original/report_validation/SVM_PR.png" width="270"/>
 </p>
 
 
@@ -1580,9 +1563,12 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/classification_report_test/SVM.png" width="300"/>
-<img src="./Reports/Original/classification_report_test/SVM_ROC.png" width="350"/>
+<img src="./Reports/Original/report_test/SVM.png" width="250"/>
+<img src="./Reports/Original/report_test/SVM_ROC.png" width="270"/>
+<img src="./Reports/Original/report_test/SVM_PR.png" width="270"/>
 </p>
+
+> ___Since `predict_proba` may be [inconsistent](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC) with predict, `.predict()` method is used to plot the ROC curves and Precision-Recall curves for SVM.___
 
 
 - __[Light GBM](#LightGBM)__ 
@@ -1616,8 +1602,9 @@ __Validation dataset__
             
 
 <p float="left">
-<img src="./Reports/Original/classification_report_validation/LGBMClassifier.png" width="300"/>
-<img src="./Reports/Original/classification_report_validation/LGBMClassifier_ROC.png" width="350"/>
+<img src="./Reports/Original/report_validation/LightGBM.png" width="250"/>
+<img src="./Reports/Original/report_validation/LightGBM_ROC.png" width="270"/>
+<img src="./Reports/Original/report_validation/LightGBM_PR.png" width="270"/>
 </p>
 
 
@@ -1636,8 +1623,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/classification_report_test/LGBMClassifier.png" width="300"/>
-<img src="./Reports/Original/classification_report_test/LGBMClassifier_ROC.png" width="350"/>
+<img src="./Reports/Original/report_test/LightGBM.png" width="250"/>
+<img src="./Reports/Original/report_test/LightGBM_ROC.png" width="270"/>
+<img src="./Reports/Original/report_test/LightGBM_PR.png" width="270"/>
 </p>
 
 
@@ -1676,8 +1664,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/classification_report_validation/RandomForest.png" width="300"/>
-<img src="./Reports/Original/classification_report_validation/RandomForest_ROC.png" width="350"/>
+<img src="./Reports/Original/report_validation/RandomForest.png" width="250"/>
+<img src="./Reports/Original/report_validation/RandomForest_ROC.png" width="270"/>
+<img src="./Reports/Original/report_validation/RandomForest_PR.png" width="270"/>
 </p>
 
 
@@ -1696,8 +1685,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/classification_report_test/RandomForest.png" width="300"/>
-<img src="./Reports/Original/classification_report_test/RandomForest_ROC.png" width="350"/>
+<img src="./Reports/Original/report_test/RandomForest.png" width="250"/>
+<img src="./Reports/Original/report_test/RandomForest_ROC.png" width="270"/>
+<img src="./Reports/Original/report_test/RandomForest_PR.png" width="270"/>
 </p>
 
 
@@ -1734,8 +1724,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/classification_report_validation/XGBoost.png" width="300"/>
-<img src="./Reports/Original/classification_report_validation/XGBoost_ROC.png" width="350"/>
+<img src="./Reports/Original/report_validation/XGBoost.png" width="250"/>
+<img src="./Reports/Original/report_validation/XGBoost_ROC.png" width="270"/>
+<img src="./Reports/Original/report_validation/XGBoost_PR.png" width="270"/>
 </p>
 
 
@@ -1754,8 +1745,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/classification_report_test/XGBoost.png" width="300"/>
-<img src="./Reports/Original/classification_report_test/XGBoost_ROC.png" width="350"/>
+<img src="./Reports/Original/report_test/XGBoost.png" width="250"/>
+<img src="./Reports/Original/report_test/XGBoost_ROC.png" width="270"/>
+<img src="./Reports/Original/report_test/XGBoost_PR.png" width="270"/>
 </p>
 
 
@@ -1782,8 +1774,9 @@ __Validation dataset__
             
 
 <p float="left">
-<img src="./Reports/Original/classification_report_validation/KNN.png" width="300"/>
-<img src="./Reports/Original/classification_report_validation/KNN_ROC.png" width="350"/>
+<img src="./Reports/Original/report_validation/KNN.png" width="250"/>
+<img src="./Reports/Original/report_validation/KNN_ROC.png" width="270"/>
+<img src="./Reports/Original/report_validation/KNN_PR.png" width="270"/>
 </p>
 
 
@@ -1802,8 +1795,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/classification_report_test/KNN.png" width="300"/>
-<img src="./Reports/Original/classification_report_test/KNN_ROC.png" width="350"/>
+<img src="./Reports/Original/report_test/KNN.png" width="250"/>
+<img src="./Reports/Original/report_test/KNN_ROC.png" width="270"/>
+<img src="./Reports/Original/report_test/KNN_PR.png" width="270"/>
 </p>
 
 
@@ -1843,8 +1837,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/classification_report_validation/GradientBoost.png" width="300"/>
-<img src="./Reports/Original/classification_report_validation/GradientBoost_ROC.png" width="350"/>
+<img src="./Reports/Original/report_validation/GradientBoost.png" width="250"/>
+<img src="./Reports/Original/report_validation/GradientBoost_ROC.png" width="270"/>
+<img src="./Reports/Original/report_validation/GradientBoost_PR.png" width="270"/>
 </p>
 
 
@@ -1863,8 +1858,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/classification_report_test/GradientBoost.png" width="300"/>
-<img src="./Reports/Original/classification_report_test/GradientBoost_ROC.png" width="350"/>
+<img src="./Reports/Original/report_test/GradientBoost.png" width="250"/>
+<img src="./Reports/Original/report_test/GradientBoost_ROC.png" width="270"/>
+<img src="./Reports/Original/report_test/GradientBoost_PR.png" width="270"/>
 </p>
 
 
@@ -1893,8 +1889,9 @@ __Validation dataset__
              
 
 <p float="left">
-<img src="./Reports/Original/classification_report_validation/AdaBoost.png" width="300"/>
-<img src="./Reports/Original/classification_report_validation/AdaBoost_ROC.png" width="350"/>
+<img src="./Reports/Original/report_validation/AdaBoost.png" width="250"/>
+<img src="./Reports/Original/report_validation/AdaBoost_ROC.png" width="270"/>
+<img src="./Reports/Original/report_validation/AdaBoost_PR.png" width="270"/>
 </p>
 
 
@@ -1913,8 +1910,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/classification_report_test/AdaBoost.png" width="300"/>
-<img src="./Reports/Original/classification_report_test/AdaBoost_ROC.png" width="350"/>
+<img src="./Reports/Original/report_test/AdaBoost.png" width="250"/>
+<img src="./Reports/Original/report_test/AdaBoost_ROC.png" width="270"/>
+<img src="./Reports/Original/report_test/AdaBoost_PR.png" width="270"/>
 </p>
 
 
@@ -1926,7 +1924,7 @@ __[top](#Contents)__
 ## Metrics per class for resampled dataset
 
 
-- __[SMOTE-Tomek Links: SVM](#SMOTE-Tomek-Links:-SVM)__ 
+- __[SMOTE-Tomek Links for SVM](#SMOTE-Tomek-Links-for-SVM)__ 
 
 
               Parameter Tuned value
@@ -1951,8 +1949,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks_ROC.png" width="350"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks.png" width="250"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks_ROC.png" width="270"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks_PR.png" width="270"/>
 </p>
 
 
@@ -1972,14 +1971,15 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks_ROC.png" width="350"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks.png" width="250"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks_ROC.png" width="270"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks_PR.png" width="270"/>
 </p>
 
 
 
    
-- __[SMOTE-Tomek Links: LightGBM](#SMOTE-Tomek-Links:-LightGBM)__ 
+- __[SMOTE-Tomek Links for LightGBM](#SMOTE-Tomek-Links-for-LightGBM)__ 
 
 
                    Parameter Tuned value
@@ -2010,8 +2010,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks_ROC.png" width="350"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks.png" width="250"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks_ROC.png" width="270"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks_PR.png" width="270"/>
 </p>
 
 
@@ -2032,14 +2033,15 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks_ROC.png" width="350"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks.png" width="250"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks_ROC.png" width="270"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks_PR.png" width="270"/>
 </p>
 
 
 
 
-- __[SMOTE-ENN: SVM](#SMOTE-ENN:-SVM)__ 
+- __[SMOTE-ENN for SVM](#SMOTE-ENN-for-SVM)__ 
 
 
               Parameter Tuned value
@@ -2065,8 +2067,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn_ROC.png" width="350"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn.png" width="250"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn_ROC.png" width="270"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn_PR.png" width="270"/>
 </p>
 
    
@@ -2086,12 +2089,13 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn_ROC.png" width="350"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn.png" width="250"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn_ROC.png" width="270"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn_PR.png" width="270"/>
 </p>
 
     
-- __[SMOTE-ENN: LightGBM](#SMOTE-ENN:-LightGBM)__ 
+- __[SMOTE-ENN for LightGBM](#SMOTE-ENN-for-LightGBM)__ 
 
 
                    Parameter Tuned value
@@ -2124,8 +2128,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE ENN resampling/report_validation/LGBMClassifier_smoteenn.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_validation/LGBMClassifier_smoteenn_ROC.png" width="350"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/LightGBM_smoteenn.png" width="250"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/LightGBM_smoteenn_ROC.png" width="270"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/LightGBM_smoteenn_PR.png" width="270"/>
 </p>
 
 
@@ -2147,17 +2152,21 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE ENN resampling/report_test/LGBMClassifier_smoteenn.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_test/LGBMClassifier_smoteenn_ROC.png" width="350"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/LightGBM_smoteenn.png" width="250"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/LightGBM_smoteenn_ROC.png" width="270"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/LightGBM_smoteenn_PR.png" width="270"/>
 </p>
 
 
 
 __[top](#Contents)__  
 
+
+
+
+
 # TO DO
 
 - Fine tuning
-- Precision-recall curve
 
 __[top](#Contents)__  
