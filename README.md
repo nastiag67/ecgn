@@ -1568,7 +1568,7 @@ __Testing dataset__
 <img src="./Reports/Original/report_test/SVM_PR.png" width="270"/>
 </p>
 
-> ___Since `predict_proba` may be [inconsistent](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC) with predict, `.predict()` method is used to plot the ROC curve and Precision-Recall curve.___
+> ___Since `predict_proba` may be [inconsistent](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC) with predict, `.predict()` method is used to plot the ROC curves and Precision-Recall curves for SVM.___
 
 
 - __[Light GBM](#LightGBM)__ 
