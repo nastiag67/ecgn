@@ -12,11 +12,11 @@ __[3. Model Selection](#MODEL-SELECTION)__
     [3.2.1. XGBoost](#XGBoost)  
     [3.2.2. Gradient boosting](#Gradient-boosting)  
     [3.2.3. LightGBM](#LightGBM)  
-    [⁽ⁿᵉʷ⁾3.2.4. AdaBoost](#AdaBoost)  
-    [3.2.5. Random forests](#Random-forests)  
+    [3.2.4. AdaBoost](#AdaBoost)  
+    [3.2.5. Random Forest](#Random-Forest)  
     
-__[4. Resampling](#Resamling)__  
-    [4.1. SMOTE-Tomek Links Method](#SMOTE-Tomek-Links-Method)  
+__[⁽ⁿᵉʷ⁾4. Resampling](#Resamling)__  
+    [⁽ⁿᵉʷ⁾4.1. SMOTE-Tomek Links Method](#SMOTE-Tomek-Links-Method)  
     [⁽ⁿᵉʷ⁾4.2. SMOTE-ENN Method](#SMOTE-ENN-Method)  
 
 __[⁽ⁿᵉʷ⁾5. Summary of the results](#Summary-of-the-results)__  
@@ -28,7 +28,7 @@ __[6. TO DO](#TO-DO)__
 
 
 
-```python
+```
 import numpy as np 
 import pandas as pd 
 
@@ -50,8 +50,8 @@ from sklearn.metrics import jaccard_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import log_loss
 
-from imblearn.combine import SMOTEENN
-from imblearn.under_sampling import EditedNearestNeighbours
+from imblearn.combine import SMOTEENN, SMOTETomek
+from imblearn.under_sampling import EditedNearestNeighbours, TomekLinks
 
 # my packages
 import pipelitools as t
@@ -75,7 +75,7 @@ Each row is one beat taken from the original source (represents 10 seconds of da
 __Task:__ multiclass classification
 
 
-```python
+```
 import os
 for dirname, _, filenames in os.walk('../data'):
     for filename in filenames:
@@ -106,7 +106,7 @@ __[top](#Contents)__
 - Normal heartbeat is the most popular class. Deviations from this class are scarce, especially for class 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat) and require more attention.
 
 
-```python
+```
 from pipelitools.preprocessing import eda
 
 cls_df = eda.Dataset(X_train)
@@ -137,7 +137,7 @@ cls_df.get_summary(
 ### Observations per class
 
 
-```python
+```
 labels = ['0 (N - Normal beat)',
           '1 (S - Supraventricular premature beat)',
           '2 (V - Premature ventricular contraction)',
@@ -160,7 +160,7 @@ plt.show()
 ### Examples from different classes
 
 
-```python
+```
 # sample one observation
 r_sample = df_train.groupby(187, group_keys=False).apply(lambda train_df: train_df.sample(1, random_state=42))
 
@@ -198,7 +198,7 @@ So, we need to improve __recall__, the ability of a model to find all relevant c
 A __macro-average__ will compute the metric independently for each class and then take the average (hence treating all classes equally), whereas a __micro-average__ will aggregate the contributions of all classes to compute the average metric. Macro leads to a lower result since it doesn't account for the number of samples in the minority class.
 
 
-```python
+```
 #train validation split
 X_train, X_val, y_train, y_val = train_test_split(train.iloc[:,:-1], train.iloc[:,-1], 
                                                     test_size=0.2, random_state=42)
@@ -231,7 +231,7 @@ __[top](#Contents)__
 ## K-Nearest Neighbors
 
 
-```python
+```
 %%time
 
 from sklearn.neighbors import KNeighborsClassifier
@@ -289,7 +289,7 @@ model_knn, y_pred_knn = cls_models.checkmodel(
     
 
 
-```python
+```
 # check the metrics on testing dataset
 mt.metrics_report(model_knn, 'KNN', X_test, y_test, y_train, data='test')
 ```
@@ -319,7 +319,7 @@ __[top](#Contents)__
 ## SVM
 
 
-```python
+```
 %%time
 
 name = 'SVM'
@@ -378,7 +378,7 @@ model_svm, y_pred_svm = cls_models.checkmodel(
     
 
 
-```python
+```
 # check the metrics on testing dataset
 mt.metrics_report(model_svm[0], 'SVM', X_test, y_test, y_train, data='test')
 ```
@@ -410,7 +410,7 @@ __[top](#Contents)__
 ### XGBoost
 
 
-```python
+```
 %%time
 
 import xgboost as xgb
@@ -498,7 +498,7 @@ model_xgb, y_pred_xgb = cls_models.checkmodel(
 
 
 
-```python
+```
 # check the metrics on testing dataset
 mt.metrics_report(model_xgb, 'XGBoost', X_test, y_test, y_train, data='test')
 ```
@@ -528,7 +528,7 @@ __[top](#Contents)__
 ### Gradient Boosting
 
 
-```python
+```
 %%time
 from sklearn.ensemble import GradientBoostingClassifier
 
@@ -604,7 +604,7 @@ model_gb, y_pre_gb = cls_models.checkmodel(
     
 
 
-```python
+```
 # check the metrics on testing dataset
 mt.metrics_report(model_gb, 'GradientBoost', X_test, y_test, y_train, data='test')
 ```
@@ -634,7 +634,7 @@ __[top](#Contents)__
 ### LightGBM
 
 
-```python
+```
 %%time
 import lightgbm as lgb
 
@@ -712,7 +712,7 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
     
 
 
-```python
+```
 # check the metrics on testing dataset
 mt.metrics_report(model_lgbm[0], 'Light GBM', X_test, y_test, y_train, data='test')
 ```
@@ -742,7 +742,7 @@ __[top](#Contents)__
 ### AdaBoost
 
 
-```python
+```
 %%time
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.linear_model import LogisticRegression
@@ -805,7 +805,7 @@ model_ada, y_pred_ada = cls_models.checkmodel(
     
 
 
-```python
+```
 # check the metrics on testing dataset
 mt.metrics_report(model_ada, 'AdaBoost', X_test, y_test, y_train, data='test')
 ```
@@ -835,7 +835,7 @@ __[top](#Contents)__
 ### Random Forest
 
 
-```python
+```
 %%time
 from sklearn.ensemble import RandomForestClassifier
 
@@ -910,7 +910,7 @@ model_rf, y_pred_rf = cls_models.checkmodel(
     
 
 
-```python
+```
 # check the metrics on testing dataset
 mt.metrics_report(model_rf, 'RandomForest', X_test, y_test, y_train, data='test')
 ```
@@ -965,7 +965,7 @@ This method is effective because the synthetic data that are generated are relat
 
 
 
-```python
+```
 from imblearn.under_sampling import TomekLinks
 from imblearn.combine import SMOTETomek
 ```
@@ -973,7 +973,7 @@ from imblearn.combine import SMOTETomek
 ### SMOTE-Tomek Links for SVM
 
 
-```python
+```
 %%time
 
 name = 'SVM'
@@ -1036,7 +1036,7 @@ model_svm, y_pred_svm = cls_models.checkmodel(
     
 
 
-```python
+```
 # check the metrics on testing dataset
 mt.metrics_report(model_svm, 'SVM', X_test, y_test, y_train, data='test')
 ```
@@ -1066,7 +1066,7 @@ __[top](#Contents)__
 ### SMOTE-Tomek Links for LightGBM
 
 
-```python
+```
 %%time
 import lightgbm as lgb
 
@@ -1161,7 +1161,7 @@ Correct hyperparameters:
 
 
 
-```python
+```
 # check the metrics on validation dataset
 mt.metrics_report(loaded_model, 'LightGBM', X_val, y_val, y_train, data='validation')
 ```
@@ -1187,7 +1187,7 @@ mt.metrics_report(loaded_model, 'LightGBM', X_val, y_val, y_train, data='validat
 
 
 
-```python
+```
 # check the metrics on testing dataset
 mt.metrics_report(model_lgbm, 'LightGBM', X_test, y_test, y_train, data='test')
 ```
@@ -1212,6 +1212,274 @@ mt.metrics_report(model_lgbm, 'LightGBM', X_test, y_test, y_train, data='test')
     
 
 
+__[top](#Contents)__  
+
+### SMOTE-Tomek Links for Random Forest
+
+
+```
+%%time
+from sklearn.ensemble import RandomForestClassifier
+
+name='RandomForest'
+model = RandomForestClassifier(random_state=42,
+#                               n_jobs=None,  # None
+                              )
+
+resample=SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'), random_state=42)
+
+steps=[
+    ('r', resample),
+]
+
+parameters = {
+    'RandomForest__n_estimators': [100, 500],  # 100
+    'RandomForest__criterion': ['gini'],  # gini
+    'RandomForest__max_depth': [None, 5, 10],  # None
+    'RandomForest__min_samples_split': [2, 5],  # 2
+    'RandomForest__min_samples_leaf': [1, 5],  # 1
+    'RandomForest__min_weight_fraction_leaf': [0],  # 0
+#     'RandomForest__max_features': ['auto'],  # auto
+    'RandomForest__max_leaf_nodes': [None],  # None
+    'RandomForest__min_impurity_decrease': [0],  # 0
+    'RandomForest__bootstrap': [True],  # True
+    'RandomForest__oob_score': [True],  # False - only if bootstrap=True
+    'RandomForest__max_samples': [None],  # None - if bootstrap=True
+    'RandomForest__class_weight': [None, 'balanced'],  # None
+}
+
+model_rf, y_pred_rf = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='macro',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=56,
+                                    save_pickle=True,
+                                    verbose=3
+                                    )
+```
+
+    Fitting 5 folds for each of 48 candidates, totalling 240 fits
+    Mean cross-validated score of the best_estimator: 0.8936
+                       Parameter Tuned value
+    0                  bootstrap        True
+    1               class_weight        None
+    2                  criterion        gini
+    3                  max_depth          10
+    4             max_leaf_nodes        None
+    5                max_samples        None
+    6      min_impurity_decrease           0
+    7           min_samples_leaf           1
+    8          min_samples_split           2
+    9   min_weight_fraction_leaf           0
+    10              n_estimators         500
+    11                 oob_score        True 
+    
+                  precision    recall  f1-score   support
+    
+             0.0       0.99      0.96      0.97     14579
+             1.0       0.62      0.81      0.71       426
+             2.0       0.90      0.89      0.90      1112
+             3.0       0.27      0.86      0.41       145
+             4.0       0.96      0.96      0.96      1249
+    
+        accuracy                           0.95     17511
+       macro avg       0.75      0.90      0.79     17511
+    weighted avg       0.96      0.95      0.95     17511
+    
+    Wall time: 8h 26min 14s
+    
+
+
+    
+![png](README_files/README_46_1.png)
+    
+
+
+
+```
+%%time
+from sklearn.ensemble import RandomForestClassifier
+
+name='RandomForest'
+model = RandomForestClassifier(random_state=42,
+#                               n_jobs=None,  # None
+                              )
+
+resample=SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'), random_state=42)
+
+steps=[
+    ('r', resample),
+]
+
+parameters = {
+    'RandomForest__n_estimators': [500],  # 100
+    'RandomForest__criterion': ['gini'],  # gini
+    'RandomForest__max_depth': [10],  # None
+    'RandomForest__min_samples_split': [2],  # 2
+    'RandomForest__min_samples_leaf': [1],  # 1
+    'RandomForest__min_weight_fraction_leaf': [0],  # 0
+#     'RandomForest__max_features': ['auto'],  # auto
+    'RandomForest__max_leaf_nodes': [None],  # None
+    'RandomForest__min_impurity_decrease': [0],  # 0
+    'RandomForest__bootstrap': [True],  # True
+    'RandomForest__oob_score': [True],  # False - only if bootstrap=True
+    'RandomForest__max_samples': [None],  # None - if bootstrap=True
+    'RandomForest__class_weight': [None],  # None
+}
+
+model_rf, y_pred_rf = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='macro',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=5,
+                                    save_pickle=True,
+                                    verbose=3
+                                    )
+```
+
+    Fitting 5 folds for each of 1 candidates, totalling 5 fits
+    Mean cross-validated score of the best_estimator: 0.8936
+                       Parameter Tuned value
+    0                  bootstrap        True
+    1               class_weight        None
+    2                  criterion        gini
+    3                  max_depth          10
+    4             max_leaf_nodes        None
+    5                max_samples        None
+    6      min_impurity_decrease           0
+    7           min_samples_leaf           1
+    8          min_samples_split           2
+    9   min_weight_fraction_leaf           0
+    10              n_estimators         500
+    11                 oob_score        True 
+    
+                  precision    recall  f1-score   support
+    
+             0.0       0.99      0.96      0.97     14579
+             1.0       0.62      0.81      0.71       426
+             2.0       0.90      0.89      0.90      1112
+             3.0       0.27      0.86      0.41       145
+             4.0       0.96      0.96      0.96      1249
+    
+        accuracy                           0.95     17511
+       macro avg       0.75      0.90      0.79     17511
+    weighted avg       0.96      0.95      0.95     17511
+    
+    Wall time: 1h 9min 21s
+    
+
+
+    
+![png](README_files/README_47_1.png)
+    
+
+
+
+```
+# check the metrics on testing dataset
+mt.metrics_report(model_rf, 'RandomForest', X_test, y_test, y_train, data='test')
+```
+
+                  precision    recall  f1-score   support
+    
+             0.0       0.98      0.95      0.97     18118
+             1.0       0.60      0.76      0.67       556
+             2.0       0.92      0.90      0.91      1448
+             3.0       0.22      0.87      0.35       162
+             4.0       0.96      0.95      0.96      1608
+    
+        accuracy                           0.94     21892
+       macro avg       0.74      0.89      0.77     21892
+    weighted avg       0.96      0.94      0.95     21892
+    
+    
+
+
+    
+![png](README_files/README_48_1.png)
+    
+
+
+__[top](#Contents)__  
+
+
+### SMOTE-Tomek Links for XGBoost
+
+
+```
+%%time
+
+import xgboost as xgb
+
+name = 'XGBoost'
+model = xgb.XGBClassifier(    
+    seed=42,
+    verbosity=0,
+    use_label_encoder=False,
+    objective='multi:softmax',
+    num_class=5,
+#     eval_metric='mlogloss',
+    eval_metric='merror',
+)
+
+
+resample=SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'), random_state=42)
+
+steps=[
+    ('r', resample),
+]
+
+parameters = {    
+    'XGBoost__eta': [0.05, 0.3, 0.5],  # 0.3
+    'XGBoost__gamma': [0, 1, 5],  # 0
+    'XGBoost__max_depth': [3, 6, 10],  # 6
+    'XGBoost__min_child_weight': [0.5, 1],  # 1
+    'XGBoost__subsample': [0.7, 1],  # 1
+    'XGBoost__sampling_method': ['uniform'],  # uniform
+#     'XGBoost__colsample_bytree': [0.7],  # 1
+    'XGBoost__lambda': [1],  # 1
+    'XGBoost__alpha': [0],  # 0
+    'XGBoost__tree_method': ['auto'],  # auto
+    'XGBoost__scale_pos_weight': [0.3, 0.7, 1],  # 1
+#     'XGBoost__predictor': ['cpu_predictor'],  # auto
+    'XGBoost__num_parallel_tree': [1],  # 1
+}
+
+model_xgb, y_pred_xgb = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='macro',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=56,
+                                    save_pickle=False,
+                                    verbose=3
+                                    )
+
+```
+
+
+```
+# check the metrics on testing dataset
+mt.metrics_report(model_xgb, 'RandomForest', X_test, y_test, y_train, data='test')
+```
+
 __[top](#Contents)__ 
     
 ## SMOTE-ENN Method
@@ -1230,7 +1498,7 @@ Developed by Batista et al (2004), this method combines the SMOTE ability to gen
 
 
 
-```python
+```
 resample=SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='all'), random_state=42)
 X, y = resample.fit_resample(X_train, y_train)
 X.info()
@@ -1253,7 +1521,7 @@ __[top](#Contents)__
 ### SMOTE-ENN for SVM
 
 
-```python
+```
 %%time
 
 name = 'SVM'
@@ -1293,13 +1561,13 @@ model_svm, y_pred_svm = cls_models.checkmodel(
 ```
 
     Fitting 5 folds for each of 15 candidates, totalling 75 fits
-   
+
     Mean cross-validated score of the best_estimator: 0.9118
           Parameter Tuned value
     0             C           1
     1  class_weight    balanced
     2         gamma         0.1 
-    
+
     
                   precision    recall  f1-score   support
     
@@ -1312,25 +1580,21 @@ model_svm, y_pred_svm = cls_models.checkmodel(
         accuracy                           0.94     17511
        macro avg       0.71      0.93      0.77     17511
     weighted avg       0.96      0.94      0.94     17511
-    
+
     Wall time: 8h 44min 17s
 
+
+    
+![png](README_files/README_55_2.png)
     
 
 
 
-    
-![png](README_files/README_48_2.png)
-    
-
-
-
-```python
+```
 # check the metrics on testing dataset
 mt.metrics_report(model_svm[0], 'SVM', X_test, y_test, y_train, data='test')
 ```
 
-    
                   precision    recall  f1-score   support
     
              0.0       0.99      0.93      0.96     18118
@@ -1343,12 +1607,10 @@ mt.metrics_report(model_svm[0], 'SVM', X_test, y_test, y_train, data='test')
        macro avg       0.70      0.91      0.76     21892
     weighted avg       0.96      0.93      0.94     21892
     
-    
-
 
 
     
-![png](README_files/README_49_2.png)
+![png](README_files/README_56_2.png)
     
 
 
@@ -1357,7 +1619,7 @@ __[top](#Contents)__
 ### SMOTE-ENN for LightGBM
 
 
-```python
+```
 %%time
 import lightgbm as lgb
 
@@ -1436,12 +1698,12 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
 
 
     
-![png](README_files/README_51_1.png)
+![png](README_files/README_58_1.png)
     
 
 
 
-```python
+```
 # check the metrics on testing dataset
 mt.metrics_report(model_lgbm, 'LGBMClassifier', X_test, y_test, y_train, data='test')
 ```
@@ -1462,9 +1724,192 @@ mt.metrics_report(model_lgbm, 'LGBMClassifier', X_test, y_test, y_train, data='t
 
 
     
-![png](README_files/README_52_1.png)
+![png](README_files/README_59_1.png)
     
 
+
+__[top](#Contents)__  
+
+### SMOTE-ENN for Random Forest
+
+
+```
+%%time
+from sklearn.ensemble import RandomForestClassifier
+
+name='RandomForest'
+model = RandomForestClassifier(random_state=42,
+#                               n_jobs=None,  # None
+                              )
+
+resample=SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='all'), random_state=42)
+
+steps=[
+    ('r', resample),
+]
+
+parameters = {
+    'RandomForest__n_estimators': [100, 500],  # 100
+    'RandomForest__criterion': ['gini'],  # gini
+    'RandomForest__max_depth': [None, 5, 10],  # None
+    'RandomForest__min_samples_split': [2, 5],  # 2
+    'RandomForest__min_samples_leaf': [1, 5],  # 1
+    'RandomForest__min_weight_fraction_leaf': [0],  # 0
+#     'RandomForest__max_features': ['auto'],  # auto
+    'RandomForest__max_leaf_nodes': [None],  # None
+    'RandomForest__min_impurity_decrease': [0],  # 0
+    'RandomForest__bootstrap': [True],  # True
+    'RandomForest__oob_score': [True],  # False - only if bootstrap=True
+    'RandomForest__max_samples': [None],  # None - if bootstrap=True
+    'RandomForest__class_weight': [None, 'balanced'],  # None
+}
+
+model_rf_enn, y_pred_rf_enn = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='macro',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=56,
+                                    save_pickle=True,
+                                    verbose=3
+                                    )
+```
+
+    Fitting 5 folds for each of 48 candidates, totalling 240 fits
+    Mean cross-validated score of the best_estimator: 0.8978
+                       Parameter Tuned value
+    0                  bootstrap        True
+    1               class_weight        None
+    2                  criterion        gini
+    3                  max_depth          10
+    4             max_leaf_nodes        None
+    5                max_samples        None
+    6      min_impurity_decrease           0
+    7           min_samples_leaf           1
+    8          min_samples_split           5
+    9   min_weight_fraction_leaf           0
+    10              n_estimators         100
+    11                 oob_score        True 
+    
+                  precision    recall  f1-score   support
+    
+             0.0       0.99      0.95      0.97     14579
+             1.0       0.56      0.83      0.67       426
+             2.0       0.88      0.90      0.89      1112
+             3.0       0.27      0.88      0.41       145
+             4.0       0.95      0.97      0.96      1249
+    
+        accuracy                           0.94     17511
+       macro avg       0.73      0.91      0.78     17511
+    weighted avg       0.96      0.94      0.95     17511
+    
+    Wall time: 10h 34min 13s
+    
+
+
+    
+![png](README_files/README_61_1.png)
+    
+
+
+
+```
+# check the metrics on testing dataset
+mt.metrics_report(model_rf_enn, 'RandomForest', X_test, y_test, y_train, data='test')
+```
+
+                  precision    recall  f1-score   support
+    
+             0.0       0.98      0.94      0.96     18118
+             1.0       0.53      0.77      0.63       556
+             2.0       0.90      0.90      0.90      1448
+             3.0       0.22      0.87      0.35       162
+             4.0       0.94      0.95      0.95      1608
+    
+        accuracy                           0.94     21892
+       macro avg       0.72      0.89      0.76     21892
+    weighted avg       0.96      0.94      0.94     21892
+    
+    
+
+
+    
+![png](README_files/README_62_1.png)
+    
+
+
+__[top](#Contents)__  
+
+
+### SMOTE-ENN for XGBoost
+
+
+```
+%%time
+
+import xgboost as xgb
+
+name = 'XGBoost'
+model = xgb.XGBClassifier(    
+    seed=42,
+    verbosity=0,
+    use_label_encoder=False,
+    objective='multi:softmax',
+    num_class=5,
+#     eval_metric='mlogloss',
+    eval_metric='merror',
+)
+
+
+resample=SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='all'), random_state=42)
+
+steps=[
+    ('r', resample),
+]
+
+parameters = {    
+    'XGBoost__eta': [0.05, 0.3, 0.5],  # 0.3
+    'XGBoost__gamma': [0, 1, 5],  # 0
+    'XGBoost__max_depth': [3, 6, 10],  # 6
+    'XGBoost__min_child_weight': [0.5, 1],  # 1
+    'XGBoost__subsample': [0.7, 1],  # 1
+    'XGBoost__sampling_method': ['uniform'],  # uniform
+#     'XGBoost__colsample_bytree': [0.7],  # 1
+    'XGBoost__lambda': [1],  # 1
+    'XGBoost__alpha': [0],  # 0
+    'XGBoost__tree_method': ['auto'],  # auto
+    'XGBoost__scale_pos_weight': [0.3, 0.7, 1],  # 1
+#     'XGBoost__predictor': ['cpu_predictor'],  # auto
+    'XGBoost__num_parallel_tree': [1],  # 1
+}
+
+model_xgb, y_pred_xgb = cls_models.checkmodel(
+                                    name,
+                                    model,
+                                    steps=steps,
+                                    parameters=parameters,
+                                    average='macro',
+                                    multiclass=True,
+                                    metric='recall',
+                                    randomized_search=False,
+                                    nfolds=5,
+                                    n_jobs=56,
+                                    save_pickle=False,
+                                    verbose=3
+                                    )
+
+```
+
+
+```
+# check the metrics on testing dataset
+mt.metrics_report(model_xgb, 'XGBoost', X_test, y_test, y_train, data='test')
+```
 
 __[top](#Contents)__ 
 
@@ -1542,9 +1987,9 @@ __Validation dataset__
     
 
 <p float="left">
-<img src="./Reports/Original/report_validation/SVM.png" width="250"/>
-<img src="./Reports/Original/report_validation/SVM_ROC.png" width="270"/>
-<img src="./Reports/Original/report_validation/SVM_PR.png" width="270"/>
+<img src="./Reports/Original/report_validation/SVM.png" width="300"/> 
+<img src="./Reports/Original/report_validation/SVM_ROC.png" width="300"/>
+<img src="./Reports/Original/report_validation/SVM_PR.png" width="300"/>
 </p>
 
 
@@ -1563,9 +2008,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_test/SVM.png" width="250"/>
-<img src="./Reports/Original/report_test/SVM_ROC.png" width="270"/>
-<img src="./Reports/Original/report_test/SVM_PR.png" width="270"/>
+<img src="./Reports/Original/report_test/SVM.png" width="300"/>
+<img src="./Reports/Original/report_test/SVM_ROC.png" width="300"/>
+<img src="./Reports/Original/report_test/SVM_PR.png" width="300"/>
 </p>
 
 > ___Since `predict_proba` may be [inconsistent](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC) with predict, `.predict()` method is used to plot the ROC curve and Precision-Recall curve.___
@@ -1602,9 +2047,9 @@ __Validation dataset__
             
 
 <p float="left">
-<img src="./Reports/Original/report_validation/LightGBM.png" width="250"/>
-<img src="./Reports/Original/report_validation/LightGBM_ROC.png" width="270"/>
-<img src="./Reports/Original/report_validation/LightGBM_PR.png" width="270"/>
+<img src="./Reports/Original/report_validation/LightGBM.png" width="300"/>
+<img src="./Reports/Original/report_validation/LightGBM_ROC.png" width="300"/>
+<img src="./Reports/Original/report_validation/LightGBM_PR.png" width="300"/>
 </p>
 
 
@@ -1623,9 +2068,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_test/LightGBM.png" width="250"/>
-<img src="./Reports/Original/report_test/LightGBM_ROC.png" width="270"/>
-<img src="./Reports/Original/report_test/LightGBM_PR.png" width="270"/>
+<img src="./Reports/Original/report_test/LightGBM.png" width="300"/>
+<img src="./Reports/Original/report_test/LightGBM_ROC.png" width="300"/>
+<img src="./Reports/Original/report_test/LightGBM_PR.png" width="300"/>
 </p>
 
 
@@ -1664,9 +2109,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_validation/RandomForest.png" width="250"/>
-<img src="./Reports/Original/report_validation/RandomForest_ROC.png" width="270"/>
-<img src="./Reports/Original/report_validation/RandomForest_PR.png" width="270"/>
+<img src="./Reports/Original/report_validation/RandomForest.png" width="300"/>
+<img src="./Reports/Original/report_validation/RandomForest_ROC.png" width="300"/>
+<img src="./Reports/Original/report_validation/RandomForest_PR.png" width="300"/>
 </p>
 
 
@@ -1685,9 +2130,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_test/RandomForest.png" width="250"/>
-<img src="./Reports/Original/report_test/RandomForest_ROC.png" width="270"/>
-<img src="./Reports/Original/report_test/RandomForest_PR.png" width="270"/>
+<img src="./Reports/Original/report_test/RandomForest.png" width="300"/>
+<img src="./Reports/Original/report_test/RandomForest_ROC.png" width="300"/>
+<img src="./Reports/Original/report_test/RandomForest_PR.png" width="300"/>
 </p>
 
 
@@ -1724,9 +2169,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_validation/XGBoost.png" width="250"/>
-<img src="./Reports/Original/report_validation/XGBoost_ROC.png" width="270"/>
-<img src="./Reports/Original/report_validation/XGBoost_PR.png" width="270"/>
+<img src="./Reports/Original/report_validation/XGBoost.png" width="300"/>
+<img src="./Reports/Original/report_validation/XGBoost_ROC.png" width="300"/>
+<img src="./Reports/Original/report_validation/XGBoost_PR.png" width="300"/>
 </p>
 
 
@@ -1745,9 +2190,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_test/XGBoost.png" width="250"/>
-<img src="./Reports/Original/report_test/XGBoost_ROC.png" width="270"/>
-<img src="./Reports/Original/report_test/XGBoost_PR.png" width="270"/>
+<img src="./Reports/Original/report_test/XGBoost.png" width="300"/>
+<img src="./Reports/Original/report_test/XGBoost_ROC.png" width="300"/>
+<img src="./Reports/Original/report_test/XGBoost_PR.png" width="300"/>
 </p>
 
 
@@ -1774,9 +2219,9 @@ __Validation dataset__
             
 
 <p float="left">
-<img src="./Reports/Original/report_validation/KNN.png" width="250"/>
-<img src="./Reports/Original/report_validation/KNN_ROC.png" width="270"/>
-<img src="./Reports/Original/report_validation/KNN_PR.png" width="270"/>
+<img src="./Reports/Original/report_validation/KNN.png" width="300"/>
+<img src="./Reports/Original/report_validation/KNN_ROC.png" width="300"/>
+<img src="./Reports/Original/report_validation/KNN_PR.png" width="300"/>
 </p>
 
 
@@ -1795,9 +2240,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_test/KNN.png" width="250"/>
-<img src="./Reports/Original/report_test/KNN_ROC.png" width="270"/>
-<img src="./Reports/Original/report_test/KNN_PR.png" width="270"/>
+<img src="./Reports/Original/report_test/KNN.png" width="300"/>
+<img src="./Reports/Original/report_test/KNN_ROC.png" width="300"/>
+<img src="./Reports/Original/report_test/KNN_PR.png" width="300"/>
 </p>
 
 
@@ -1837,9 +2282,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_validation/GradientBoost.png" width="250"/>
-<img src="./Reports/Original/report_validation/GradientBoost_ROC.png" width="270"/>
-<img src="./Reports/Original/report_validation/GradientBoost_PR.png" width="270"/>
+<img src="./Reports/Original/report_validation/GradientBoost.png" width="300"/>
+<img src="./Reports/Original/report_validation/GradientBoost_ROC.png" width="300"/>
+<img src="./Reports/Original/report_validation/GradientBoost_PR.png" width="300"/>
 </p>
 
 
@@ -1858,9 +2303,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_test/GradientBoost.png" width="250"/>
-<img src="./Reports/Original/report_test/GradientBoost_ROC.png" width="270"/>
-<img src="./Reports/Original/report_test/GradientBoost_PR.png" width="270"/>
+<img src="./Reports/Original/report_test/GradientBoost.png" width="300"/>
+<img src="./Reports/Original/report_test/GradientBoost_ROC.png" width="300"/>
+<img src="./Reports/Original/report_test/GradientBoost_PR.png" width="300"/>
 </p>
 
 
@@ -1889,9 +2334,9 @@ __Validation dataset__
              
 
 <p float="left">
-<img src="./Reports/Original/report_validation/AdaBoost.png" width="250"/>
-<img src="./Reports/Original/report_validation/AdaBoost_ROC.png" width="270"/>
-<img src="./Reports/Original/report_validation/AdaBoost_PR.png" width="270"/>
+<img src="./Reports/Original/report_validation/AdaBoost.png" width="300"/>
+<img src="./Reports/Original/report_validation/AdaBoost_ROC.png" width="300"/>
+<img src="./Reports/Original/report_validation/AdaBoost_PR.png" width="300"/>
 </p>
 
 
@@ -1910,10 +2355,12 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_test/AdaBoost.png" width="250"/>
-<img src="./Reports/Original/report_test/AdaBoost_ROC.png" width="270"/>
-<img src="./Reports/Original/report_test/AdaBoost_PR.png" width="270"/>
+<img src="./Reports/Original/report_test/AdaBoost.png" width="300"/>
+<img src="./Reports/Original/report_test/AdaBoost_ROC.png" width="300"/>
+<img src="./Reports/Original/report_test/AdaBoost_PR.png" width="300"/>
 </p>
+
+
 
 
 
@@ -1949,9 +2396,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks.png" width="250"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks_ROC.png" width="270"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks_PR.png" width="270"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks_ROC.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks_PR.png" width="300"/>
 </p>
 
 
@@ -1971,9 +2418,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks.png" width="250"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks_ROC.png" width="270"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks_PR.png" width="270"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks_ROC.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks_PR.png" width="300"/>
 </p>
 
 
@@ -2010,9 +2457,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks.png" width="250"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks_ROC.png" width="270"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks_PR.png" width="270"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks_ROC.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks_PR.png" width="300"/>
 </p>
 
 
@@ -2033,12 +2480,71 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks.png" width="250"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks_ROC.png" width="270"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks_PR.png" width="270"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks_ROC.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks_PR.png" width="300"/>
 </p>
 
 
+- __[SMOTE Tomek-Links for Random Forest](#SMOTE-Tomek-Links-for-Random-Forest)__ 
+
+
+                           Parameter Tuned value
+        0                  bootstrap        True
+        1               class_weight        None
+        2                  criterion        gini
+        3                  max_depth          10
+        4             max_leaf_nodes        None
+        5                max_samples        None
+        6      min_impurity_decrease           0
+        7           min_samples_leaf           1
+        8          min_samples_split           2
+        9   min_weight_fraction_leaf           0
+        10              n_estimators         500
+        11                 oob_score        True 
+
+    
+__Validation dataset__
+
+
+                      precision    recall  f1-score   support
+                 0.0       0.99      0.96      0.97     14579
+                 1.0       0.62      0.81      0.71       426
+                 2.0       0.90      0.89      0.90      1112
+                 3.0       0.27      0.86      0.41       145
+                 4.0       0.96      0.96      0.96      1249
+
+            accuracy                           0.95     17511
+           macro avg       0.75      0.90      0.79     17511
+        weighted avg       0.96      0.95      0.95     17511
+
+
+<p float="left">
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/RandomForest_tomeklinks.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/RandomForest_tomeklinks_ROC.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/RandomForest_tomeklinks_PR.png" width="300"/>
+</p>
+
+
+__Testing dataset__  
+
+
+                          precision    recall  f1-score   support
+                     0.0       0.98      0.95      0.97     18118
+                     1.0       0.60      0.76      0.67       556
+                     2.0       0.92      0.90      0.91      1448
+                     3.0       0.22      0.87      0.35       162
+                     4.0       0.96      0.95      0.96      1608
+
+                accuracy                           0.94     21892
+               macro avg       0.74      0.89      0.77     21892
+            weighted avg       0.96      0.94      0.95     21892
+
+<p float="left">
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/RandomForest_tomeklinks.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/RandomForest_tomeklinks_ROC.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/RandomForest_tomeklinks_PR.png" width="300"/>
+</p>
 
 
 - __[SMOTE-ENN for SVM](#SMOTE-ENN-for-SVM)__ 
@@ -2067,9 +2573,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn.png" width="250"/>
-<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn_ROC.png" width="270"/>
-<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn_PR.png" width="270"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn_ROC.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn_PR.png" width="300"/>
 </p>
 
    
@@ -2089,9 +2595,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn.png" width="250"/>
-<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn_ROC.png" width="270"/>
-<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn_PR.png" width="270"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn_ROC.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn_PR.png" width="300"/>
 </p>
 
     
@@ -2128,9 +2634,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE ENN resampling/report_validation/LightGBM_smoteenn.png" width="250"/>
-<img src="./Reports/SMOTE ENN resampling/report_validation/LightGBM_smoteenn_ROC.png" width="270"/>
-<img src="./Reports/SMOTE ENN resampling/report_validation/LightGBM_smoteenn_PR.png" width="270"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/LightGBM_smoteenn.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/LightGBM_smoteenn_ROC.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/LightGBM_smoteenn_PR.png" width="300"/>
 </p>
 
 
@@ -2152,49 +2658,76 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE ENN resampling/report_test/LightGBM_smoteenn.png" width="250"/>
-<img src="./Reports/SMOTE ENN resampling/report_test/LightGBM_smoteenn_ROC.png" width="270"/>
-<img src="./Reports/SMOTE ENN resampling/report_test/LightGBM_smoteenn_PR.png" width="270"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/LightGBM_smoteenn.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/LightGBM_smoteenn_ROC.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/LightGBM_smoteenn_PR.png" width="300"/>
 </p>
 
+
+- __[SMOTE-ENN for Random Forest](#SMOTE-ENN-for-Random-Forest)__ 
+
+
+                           Parameter Tuned value
+        0                  bootstrap        True
+        1               class_weight        None
+        2                  criterion        gini
+        3                  max_depth          10
+        4             max_leaf_nodes        None
+        5                max_samples        None
+        6      min_impurity_decrease           0
+        7           min_samples_leaf           1
+        8          min_samples_split           5
+        9   min_weight_fraction_leaf           0
+        10              n_estimators         100
+        11                 oob_score        True 
+
+    
+__Validation dataset__
+
+
+                      precision    recall  f1-score   support
+                 0.0       0.99      0.95      0.97     14579
+                 1.0       0.56      0.83      0.67       426
+                 2.0       0.88      0.90      0.89      1112
+                 3.0       0.27      0.88      0.41       145
+                 4.0       0.95      0.97      0.96      1249
+
+            accuracy                           0.94     17511
+           macro avg       0.73      0.91      0.78     17511
+        weighted avg       0.96      0.94      0.95     17511
+
+
+<p float="left">
+<img src="./Reports/SMOTE ENN resampling/report_validation/RandomForest_smoteenn.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/RandomForest_smoteenn_ROC.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/RandomForest_smoteenn_PR.png" width="300"/>
+</p>
+
+
+__Testing dataset__  
+
+
+                          precision    recall  f1-score   support
+                     0.0       0.98      0.94      0.96     18118
+                     1.0       0.53      0.77      0.63       556
+                     2.0       0.90      0.90      0.90      1448
+                     3.0       0.22      0.87      0.35       162
+                     4.0       0.94      0.95      0.95      1608
+
+                accuracy                           0.94     21892
+               macro avg       0.72      0.89      0.76     21892
+            weighted avg       0.96      0.94      0.94     21892
+
+
+<p float="left">
+<img src="./Reports/SMOTE ENN resampling/report_test/RandomForest_smoteenn.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/RandomForest_smoteenn_ROC.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/RandomForest_smoteenn_PR.png" width="300"/>
+</p>
 
 
 __[top](#Contents)__  
 
-
-```python
-import pickle
-reload(mt)
-y_test_dummy = np.array(pd.get_dummies(y_test))
-y_val_dummy = np.array(pd.get_dummies(y_val))
-y_train_dummy = np.array(pd.get_dummies(y_train))
-
-# lst_models = ['LightGBM', 'AdaBoost', 'GradientBoost', 'KNN', 'RandomForest', 'XGBoost', 'SVM']
-# lst_models = ['SVM']
-lst_models = ['LightGBM']
-folder = "./Reports/SMOTE Tomek-Links resampling/pickle_models/"
-
-roc = mt.ROCcurve_multiclass
-pr = mt.PR_multiclass
-
-for name in lst_models:
-    loaded_model = pickle.load(open(f"{folder}{name}.sav", 'rb'))
-    mt.compare_models(loaded_model, name, X_val, y_val_dummy, y_train_dummy, roc, pr, proba=True, data='validation')
-```
-
-    ROC-AUC score: 0.9904
-    
-
-
-    
-![png](README_files/README_54_1.png)
-    
-
-
-
-    
-![png](README_files/README_54_2.png)
-    
 
 
 # TO DO
