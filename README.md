@@ -12,10 +12,10 @@ __[3. Model Selection](#MODEL-SELECTION)__
     [3.2.1. XGBoost](#XGBoost)  
     [3.2.2. Gradient boosting](#Gradient-boosting)  
     [3.2.3. LightGBM](#LightGBM)  
-    [3.2.4. AdaBoost](#AdaBoost)  
+    [⁽ⁿᵉʷ⁾3.2.4. AdaBoost](#AdaBoost)  
     [3.2.5. Random Forest](#Random-Forest)  
     
-__[⁽ⁿᵉʷ⁾4. Resampling](#Resamling)__  
+__[4. Resampling](#Resamling)__  
     [⁽ⁿᵉʷ⁾4.1. SMOTE-Tomek Links Method](#SMOTE-Tomek-Links-Method)  
     [⁽ⁿᵉʷ⁾4.2. SMOTE-ENN Method](#SMOTE-ENN-Method)  
 
@@ -196,11 +196,6 @@ Although the accuracy is pretty high (90%), recall is very low for some classes 
 So, we need to improve __recall__, the ability of a model to find all relevant cases within a dataset, while keeping the precision at an appropriate level.
 
 A __macro-average__ will compute the metric independently for each class and then take the average (hence treating all classes equally), whereas a __micro-average__ will aggregate the contributions of all classes to compute the average metric. Macro leads to a lower result since it doesn't account for the number of samples in the minority class.
-
-We will split the dataset into 3 subsets:
-- training (70 043, 187);
-- validation (17 511, 187);
-- testing (21 892, 187).
 
 
 ```
@@ -1566,13 +1561,18 @@ model_svm, y_pred_svm = cls_models.checkmodel(
 ```
 
     Fitting 5 folds for each of 15 candidates, totalling 75 fits
-
+    Fitting 5 folds for each of 15 candidates, totalling 75 fits
     Mean cross-validated score of the best_estimator: 0.9118
           Parameter Tuned value
     0             C           1
     1  class_weight    balanced
     2         gamma         0.1 
-
+    
+    Mean cross-validated score of the best_estimator: 0.9118
+          Parameter Tuned value
+    0             C           1
+    1  class_weight    balanced
+    2         gamma         0.1 
     
                   precision    recall  f1-score   support
     
@@ -1585,8 +1585,28 @@ model_svm, y_pred_svm = cls_models.checkmodel(
         accuracy                           0.94     17511
        macro avg       0.71      0.93      0.77     17511
     weighted avg       0.96      0.94      0.94     17511
-
+    
+                  precision    recall  f1-score   support
+    
+             0.0       0.99      0.93      0.96     14579
+             1.0       0.43      0.87      0.57       426
+             2.0       0.86      0.93      0.89      1112
+             3.0       0.29      0.92      0.44       145
+             4.0       0.97      0.98      0.97      1249
+    
+        accuracy                           0.94     17511
+       macro avg       0.71      0.93      0.77     17511
+    weighted avg       0.96      0.94      0.94     17511
+    
     Wall time: 8h 44min 17s
+    Wall time: 8h 44min 17s
+    
+
+
+    
+![png](README_files/README_55_1.png)
+    
+
 
 
     
@@ -1612,6 +1632,25 @@ mt.metrics_report(model_svm[0], 'SVM', X_test, y_test, y_train, data='test')
        macro avg       0.70      0.91      0.76     21892
     weighted avg       0.96      0.93      0.94     21892
     
+                  precision    recall  f1-score   support
+    
+             0.0       0.99      0.93      0.96     18118
+             1.0       0.40      0.83      0.54       556
+             2.0       0.87      0.94      0.90      1448
+             3.0       0.28      0.90      0.43       162
+             4.0       0.97      0.98      0.97      1608
+    
+        accuracy                           0.93     21892
+       macro avg       0.70      0.91      0.76     21892
+    weighted avg       0.96      0.93      0.94     21892
+    
+    
+
+
+    
+![png](README_files/README_56_1.png)
+    
+
 
 
     
@@ -1992,9 +2031,9 @@ __Validation dataset__
     
 
 <p float="left">
-<img src="./Reports/Original/report_validation/SVM.png" width="300"/> 
-<img src="./Reports/Original/report_validation/SVM_ROC.png" width="300"/>
-<img src="./Reports/Original/report_validation/SVM_PR.png" width="300"/>
+<img src="./Reports/Original/report_validation/SVM.png" width="250"/> 
+<img src="./Reports/Original/report_validation/SVM_ROC.png" width="270"/>
+<img src="./Reports/Original/report_validation/SVM_PR.png" width="270"/>
 </p>
 
 
@@ -2013,12 +2052,12 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_test/SVM.png" width="300"/>
-<img src="./Reports/Original/report_test/SVM_ROC.png" width="300"/>
-<img src="./Reports/Original/report_test/SVM_PR.png" width="300"/>
+<img src="./Reports/Original/report_test/SVM.png" width="250"/>
+<img src="./Reports/Original/report_test/SVM_ROC.png" width="270"/>
+<img src="./Reports/Original/report_test/SVM_PR.png" width="270"/>
 </p>
 
-> ___Since `predict_proba` may be [inconsistent](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC) with predict, `.predict()` method is used to plot the ROC curves and Precision-Recall curves for SVM.___
+> ___Since `predict_proba` may be [inconsistent](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC) with predict, `.predict()` method is used to plot the ROC curve and Precision-Recall curve.___
 
 
 - __[Light GBM](#LightGBM)__ 
@@ -2052,9 +2091,9 @@ __Validation dataset__
             
 
 <p float="left">
-<img src="./Reports/Original/report_validation/LightGBM.png" width="300"/>
-<img src="./Reports/Original/report_validation/LightGBM_ROC.png" width="300"/>
-<img src="./Reports/Original/report_validation/LightGBM_PR.png" width="300"/>
+<img src="./Reports/Original/report_validation/LightGBM.png" width="250"/>
+<img src="./Reports/Original/report_validation/LightGBM_ROC.png" width="270"/>
+<img src="./Reports/Original/report_validation/LightGBM_PR.png" width="270"/>
 </p>
 
 
@@ -2073,9 +2112,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_test/LightGBM.png" width="300"/>
-<img src="./Reports/Original/report_test/LightGBM_ROC.png" width="300"/>
-<img src="./Reports/Original/report_test/LightGBM_PR.png" width="300"/>
+<img src="./Reports/Original/report_test/LightGBM.png" width="250"/>
+<img src="./Reports/Original/report_test/LightGBM_ROC.png" width="270"/>
+<img src="./Reports/Original/report_test/LightGBM_PR.png" width="270"/>
 </p>
 
 
@@ -2114,9 +2153,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_validation/RandomForest.png" width="300"/>
-<img src="./Reports/Original/report_validation/RandomForest_ROC.png" width="300"/>
-<img src="./Reports/Original/report_validation/RandomForest_PR.png" width="300"/>
+<img src="./Reports/Original/report_validation/RandomForest.png" width="250"/>
+<img src="./Reports/Original/report_validation/RandomForest_ROC.png" width="270"/>
+<img src="./Reports/Original/report_validation/RandomForest_PR.png" width="270"/>
 </p>
 
 
@@ -2135,9 +2174,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_test/RandomForest.png" width="300"/>
-<img src="./Reports/Original/report_test/RandomForest_ROC.png" width="300"/>
-<img src="./Reports/Original/report_test/RandomForest_PR.png" width="300"/>
+<img src="./Reports/Original/report_test/RandomForest.png" width="250"/>
+<img src="./Reports/Original/report_test/RandomForest_ROC.png" width="270"/>
+<img src="./Reports/Original/report_test/RandomForest_PR.png" width="270"/>
 </p>
 
 
@@ -2174,9 +2213,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_validation/XGBoost.png" width="300"/>
-<img src="./Reports/Original/report_validation/XGBoost_ROC.png" width="300"/>
-<img src="./Reports/Original/report_validation/XGBoost_PR.png" width="300"/>
+<img src="./Reports/Original/report_validation/XGBoost.png" width="250"/>
+<img src="./Reports/Original/report_validation/XGBoost_ROC.png" width="270"/>
+<img src="./Reports/Original/report_validation/XGBoost_PR.png" width="270"/>
 </p>
 
 
@@ -2195,9 +2234,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_test/XGBoost.png" width="300"/>
-<img src="./Reports/Original/report_test/XGBoost_ROC.png" width="300"/>
-<img src="./Reports/Original/report_test/XGBoost_PR.png" width="300"/>
+<img src="./Reports/Original/report_test/XGBoost.png" width="250"/>
+<img src="./Reports/Original/report_test/XGBoost_ROC.png" width="270"/>
+<img src="./Reports/Original/report_test/XGBoost_PR.png" width="270"/>
 </p>
 
 
@@ -2224,9 +2263,9 @@ __Validation dataset__
             
 
 <p float="left">
-<img src="./Reports/Original/report_validation/KNN.png" width="300"/>
-<img src="./Reports/Original/report_validation/KNN_ROC.png" width="300"/>
-<img src="./Reports/Original/report_validation/KNN_PR.png" width="300"/>
+<img src="./Reports/Original/report_validation/KNN.png" width="250"/>
+<img src="./Reports/Original/report_validation/KNN_ROC.png" width="270"/>
+<img src="./Reports/Original/report_validation/KNN_PR.png" width="270"/>
 </p>
 
 
@@ -2245,9 +2284,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_test/KNN.png" width="300"/>
-<img src="./Reports/Original/report_test/KNN_ROC.png" width="300"/>
-<img src="./Reports/Original/report_test/KNN_PR.png" width="300"/>
+<img src="./Reports/Original/report_test/KNN.png" width="250"/>
+<img src="./Reports/Original/report_test/KNN_ROC.png" width="270"/>
+<img src="./Reports/Original/report_test/KNN_PR.png" width="270"/>
 </p>
 
 
@@ -2287,9 +2326,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_validation/GradientBoost.png" width="300"/>
-<img src="./Reports/Original/report_validation/GradientBoost_ROC.png" width="300"/>
-<img src="./Reports/Original/report_validation/GradientBoost_PR.png" width="300"/>
+<img src="./Reports/Original/report_validation/GradientBoost.png" width="250"/>
+<img src="./Reports/Original/report_validation/GradientBoost_ROC.png" width="270"/>
+<img src="./Reports/Original/report_validation/GradientBoost_PR.png" width="270"/>
 </p>
 
 
@@ -2308,9 +2347,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_test/GradientBoost.png" width="300"/>
-<img src="./Reports/Original/report_test/GradientBoost_ROC.png" width="300"/>
-<img src="./Reports/Original/report_test/GradientBoost_PR.png" width="300"/>
+<img src="./Reports/Original/report_test/GradientBoost.png" width="250"/>
+<img src="./Reports/Original/report_test/GradientBoost_ROC.png" width="270"/>
+<img src="./Reports/Original/report_test/GradientBoost_PR.png" width="270"/>
 </p>
 
 
@@ -2339,9 +2378,9 @@ __Validation dataset__
              
 
 <p float="left">
-<img src="./Reports/Original/report_validation/AdaBoost.png" width="300"/>
-<img src="./Reports/Original/report_validation/AdaBoost_ROC.png" width="300"/>
-<img src="./Reports/Original/report_validation/AdaBoost_PR.png" width="300"/>
+<img src="./Reports/Original/report_validation/AdaBoost.png" width="250"/>
+<img src="./Reports/Original/report_validation/AdaBoost_ROC.png" width="270"/>
+<img src="./Reports/Original/report_validation/AdaBoost_PR.png" width="270"/>
 </p>
 
 
@@ -2360,9 +2399,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/Original/report_test/AdaBoost.png" width="300"/>
-<img src="./Reports/Original/report_test/AdaBoost_ROC.png" width="300"/>
-<img src="./Reports/Original/report_test/AdaBoost_PR.png" width="300"/>
+<img src="./Reports/Original/report_test/AdaBoost.png" width="250"/>
+<img src="./Reports/Original/report_test/AdaBoost_ROC.png" width="270"/>
+<img src="./Reports/Original/report_test/AdaBoost_PR.png" width="270"/>
 </p>
 
 
@@ -2401,9 +2440,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks_ROC.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks_PR.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks.png" width="250"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks_ROC.png" width="270"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/SVM_tomeklinks_PR.png" width="270"/>
 </p>
 
 
@@ -2423,9 +2462,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks_ROC.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks_PR.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks.png" width="250"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks_ROC.png" width="270"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/SVM_tomeklinks_PR.png" width="270"/>
 </p>
 
 
@@ -2462,9 +2501,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks_ROC.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks_PR.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks.png" width="250"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks_ROC.png" width="270"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/LightGBM_tomeklinks_PR.png" width="270"/>
 </p>
 
 
@@ -2485,9 +2524,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks_ROC.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks_PR.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks.png" width="250"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks_ROC.png" width="270"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/LightGBM_tomeklinks_PR.png" width="270"/>
 </p>
 
 
@@ -2525,9 +2564,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/RandomForest_tomeklinks.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/RandomForest_tomeklinks_ROC.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/RandomForest_tomeklinks_PR.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/RandomForest_tomeklinks.png" width="250"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/RandomForest_tomeklinks_ROC.png" width="270"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_validation/RandomForest_tomeklinks_PR.png" width="270"/>
 </p>
 
 
@@ -2546,9 +2585,9 @@ __Testing dataset__
             weighted avg       0.96      0.94      0.95     21892
 
 <p float="left">
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/RandomForest_tomeklinks.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/RandomForest_tomeklinks_ROC.png" width="300"/>
-<img src="./Reports/SMOTE Tomek-Links resampling/report_test/RandomForest_tomeklinks_PR.png" width="300"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/RandomForest_tomeklinks.png" width="250"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/RandomForest_tomeklinks_ROC.png" width="270"/>
+<img src="./Reports/SMOTE Tomek-Links resampling/report_test/RandomForest_tomeklinks_PR.png" width="270"/>
 </p>
 
 
@@ -2578,9 +2617,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn_ROC.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn_PR.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn.png" width="250"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn_ROC.png" width="270"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/SVM_smoteenn_PR.png" width="270"/>
 </p>
 
    
@@ -2600,9 +2639,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn_ROC.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn_PR.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn.png" width="250"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn_ROC.png" width="270"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/SVM_smoteenn_PR.png" width="270"/>
 </p>
 
     
@@ -2639,9 +2678,9 @@ __Validation dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE ENN resampling/report_validation/LightGBM_smoteenn.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_validation/LightGBM_smoteenn_ROC.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_validation/LightGBM_smoteenn_PR.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/LightGBM_smoteenn.png" width="250"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/LightGBM_smoteenn_ROC.png" width="270"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/LightGBM_smoteenn_PR.png" width="270"/>
 </p>
 
 
@@ -2663,9 +2702,9 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE ENN resampling/report_test/LightGBM_smoteenn.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_test/LightGBM_smoteenn_ROC.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_test/LightGBM_smoteenn_PR.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/LightGBM_smoteenn.png" width="250"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/LightGBM_smoteenn_ROC.png" width="270"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/LightGBM_smoteenn_PR.png" width="270"/>
 </p>
 
 
@@ -2702,12 +2741,12 @@ __Validation dataset__
         weighted avg       0.96      0.94      0.95     17511
 
 
-
 <p float="left">
-<img src="./Reports/SMOTE ENN resampling/report_validation/RandomForest_smoteenn.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_validation/RandomForest_smoteenn_ROC.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_validation/RandomForest_smoteenn_PR.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/RandomForest_smoteenn.png" width="250"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/RandomForest_smoteenn_ROC.png" width="270"/>
+<img src="./Reports/SMOTE ENN resampling/report_validation/RandomForest_smoteenn_PR.png" width="270"/>
 </p>
+
 
 __Testing dataset__  
 
@@ -2725,14 +2764,13 @@ __Testing dataset__
 
 
 <p float="left">
-<img src="./Reports/SMOTE ENN resampling/report_test/RandomForest_smoteenn.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_test/RandomForest_smoteenn_ROC.png" width="300"/>
-<img src="./Reports/SMOTE ENN resampling/report_test/RandomForest_smoteenn_PR.png" width="300"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/RandomForest_smoteenn.png" width="250"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/RandomForest_smoteenn_ROC.png" width="270"/>
+<img src="./Reports/SMOTE ENN resampling/report_test/RandomForest_smoteenn_PR.png" width="270"/>
 </p>
 
 
 __[top](#Contents)__  
-
 
 
 # TO DO
