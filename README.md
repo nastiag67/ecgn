@@ -197,6 +197,11 @@ So, we need to improve __recall__, the ability of a model to find all relevant c
 
 A __macro-average__ will compute the metric independently for each class and then take the average (hence treating all classes equally), whereas a __micro-average__ will aggregate the contributions of all classes to compute the average metric. Macro leads to a lower result since it doesn't account for the number of samples in the minority class.
 
+We will split the dataset into 3 subsets:
+- training (70 043, 187);
+- validation (17 511, 187);
+- testing (21 892, 187).
+
 
 ```
 #train validation split
@@ -2013,7 +2018,7 @@ __Testing dataset__
 <img src="./Reports/Original/report_test/SVM_PR.png" width="300"/>
 </p>
 
-> ___Since `predict_proba` may be [inconsistent](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC) with predict, `.predict()` method is used to plot the ROC curve and Precision-Recall curve.___
+> ___Since `predict_proba` may be [inconsistent](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC) with predict, `.predict()` method is used to plot the ROC curves and Precision-Recall curves for SVM.___
 
 
 - __[Light GBM](#LightGBM)__ 
@@ -2697,12 +2702,12 @@ __Validation dataset__
         weighted avg       0.96      0.94      0.95     17511
 
 
+
 <p float="left">
 <img src="./Reports/SMOTE ENN resampling/report_validation/RandomForest_smoteenn.png" width="300"/>
 <img src="./Reports/SMOTE ENN resampling/report_validation/RandomForest_smoteenn_ROC.png" width="300"/>
 <img src="./Reports/SMOTE ENN resampling/report_validation/RandomForest_smoteenn_PR.png" width="300"/>
 </p>
-
 
 __Testing dataset__  
 
