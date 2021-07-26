@@ -28,7 +28,7 @@ __[6. TO DO](#TO-DO)__
 
 
 
-```
+```python
 import numpy as np 
 import pandas as pd 
 
@@ -75,7 +75,7 @@ Each row is one beat taken from the original source (represents 10 seconds of da
 __Task:__ multiclass classification
 
 
-```
+```python
 import os
 for dirname, _, filenames in os.walk('../data'):
     for filename in filenames:
@@ -106,7 +106,7 @@ __[top](#Contents)__
 - Normal heartbeat is the most popular class. Deviations from this class are scarce, especially for class 1 (S - Supraventricular premature beat) and 3 (F - Fusion of ventricular and normal beat) and require more attention.
 
 
-```
+```python
 from pipelitools.preprocessing import eda
 
 cls_df = eda.Dataset(X_train)
@@ -137,7 +137,7 @@ cls_df.get_summary(
 ### Observations per class
 
 
-```
+```python
 labels = ['0 (N - Normal beat)',
           '1 (S - Supraventricular premature beat)',
           '2 (V - Premature ventricular contraction)',
@@ -160,7 +160,7 @@ plt.show()
 ### Examples from different classes
 
 
-```
+```python
 # sample one observation
 r_sample = df_train.groupby(187, group_keys=False).apply(lambda train_df: train_df.sample(1, random_state=42))
 
@@ -198,7 +198,7 @@ So, we need to improve __recall__, the ability of a model to find all relevant c
 A __macro-average__ will compute the metric independently for each class and then take the average (hence treating all classes equally), whereas a __micro-average__ will aggregate the contributions of all classes to compute the average metric. Macro leads to a lower result since it doesn't account for the number of samples in the minority class.
 
 
-```
+```python
 #train validation split
 X_train, X_val, y_train, y_val = train_test_split(train.iloc[:,:-1], train.iloc[:,-1], 
                                                     test_size=0.2, random_state=42)
@@ -231,7 +231,7 @@ __[top](#Contents)__
 ## K-Nearest Neighbors
 
 
-```
+```python
 %%time
 
 from sklearn.neighbors import KNeighborsClassifier
@@ -289,7 +289,7 @@ model_knn, y_pred_knn = cls_models.checkmodel(
     
 
 
-```
+```python
 # check the metrics on testing dataset
 mt.metrics_report(model_knn, 'KNN', X_test, y_test, y_train, data='test')
 ```
@@ -319,7 +319,7 @@ __[top](#Contents)__
 ## SVM
 
 
-```
+```python
 %%time
 
 name = 'SVM'
@@ -378,7 +378,7 @@ model_svm, y_pred_svm = cls_models.checkmodel(
     
 
 
-```
+```python
 # check the metrics on testing dataset
 mt.metrics_report(model_svm[0], 'SVM', X_test, y_test, y_train, data='test')
 ```
@@ -410,7 +410,7 @@ __[top](#Contents)__
 ### XGBoost
 
 
-```
+```python
 %%time
 
 import xgboost as xgb
@@ -498,7 +498,7 @@ model_xgb, y_pred_xgb = cls_models.checkmodel(
 
 
 
-```
+```python
 # check the metrics on testing dataset
 mt.metrics_report(model_xgb, 'XGBoost', X_test, y_test, y_train, data='test')
 ```
@@ -528,7 +528,7 @@ __[top](#Contents)__
 ### Gradient Boosting
 
 
-```
+```python
 %%time
 from sklearn.ensemble import GradientBoostingClassifier
 
@@ -604,7 +604,7 @@ model_gb, y_pre_gb = cls_models.checkmodel(
     
 
 
-```
+```python
 # check the metrics on testing dataset
 mt.metrics_report(model_gb, 'GradientBoost', X_test, y_test, y_train, data='test')
 ```
@@ -634,7 +634,7 @@ __[top](#Contents)__
 ### LightGBM
 
 
-```
+```python
 %%time
 import lightgbm as lgb
 
@@ -712,7 +712,7 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
     
 
 
-```
+```python
 # check the metrics on testing dataset
 mt.metrics_report(model_lgbm[0], 'Light GBM', X_test, y_test, y_train, data='test')
 ```
@@ -742,7 +742,7 @@ __[top](#Contents)__
 ### AdaBoost
 
 
-```
+```python
 %%time
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.linear_model import LogisticRegression
@@ -805,7 +805,7 @@ model_ada, y_pred_ada = cls_models.checkmodel(
     
 
 
-```
+```python
 # check the metrics on testing dataset
 mt.metrics_report(model_ada, 'AdaBoost', X_test, y_test, y_train, data='test')
 ```
@@ -835,7 +835,7 @@ __[top](#Contents)__
 ### Random Forest
 
 
-```
+```python
 %%time
 from sklearn.ensemble import RandomForestClassifier
 
@@ -910,7 +910,7 @@ model_rf, y_pred_rf = cls_models.checkmodel(
     
 
 
-```
+```python
 # check the metrics on testing dataset
 mt.metrics_report(model_rf, 'RandomForest', X_test, y_test, y_train, data='test')
 ```
@@ -965,7 +965,7 @@ This method is effective because the synthetic data that are generated are relat
 
 
 
-```
+```python
 from imblearn.under_sampling import TomekLinks
 from imblearn.combine import SMOTETomek
 ```
@@ -973,7 +973,7 @@ from imblearn.combine import SMOTETomek
 ### SMOTE-Tomek Links for SVM
 
 
-```
+```python
 %%time
 
 name = 'SVM'
@@ -1036,7 +1036,7 @@ model_svm, y_pred_svm = cls_models.checkmodel(
     
 
 
-```
+```python
 # check the metrics on testing dataset
 mt.metrics_report(model_svm, 'SVM', X_test, y_test, y_train, data='test')
 ```
@@ -1066,7 +1066,7 @@ __[top](#Contents)__
 ### SMOTE-Tomek Links for LightGBM
 
 
-```
+```python
 %%time
 import lightgbm as lgb
 
@@ -1161,7 +1161,7 @@ Correct hyperparameters:
 
 
 
-```
+```python
 # check the metrics on validation dataset
 mt.metrics_report(loaded_model, 'LightGBM', X_val, y_val, y_train, data='validation')
 ```
@@ -1187,7 +1187,7 @@ mt.metrics_report(loaded_model, 'LightGBM', X_val, y_val, y_train, data='validat
 
 
 
-```
+```python
 # check the metrics on testing dataset
 mt.metrics_report(model_lgbm, 'LightGBM', X_test, y_test, y_train, data='test')
 ```
@@ -1217,7 +1217,7 @@ __[top](#Contents)__
 ### SMOTE-Tomek Links for Random Forest
 
 
-```
+```python
 %%time
 from sklearn.ensemble import RandomForestClassifier
 
@@ -1302,7 +1302,7 @@ model_rf, y_pred_rf = cls_models.checkmodel(
 
 
 
-```
+```python
 %%time
 from sklearn.ensemble import RandomForestClassifier
 
@@ -1387,7 +1387,7 @@ model_rf, y_pred_rf = cls_models.checkmodel(
 
 
 
-```
+```python
 # check the metrics on testing dataset
 mt.metrics_report(model_rf, 'RandomForest', X_test, y_test, y_train, data='test')
 ```
@@ -1412,74 +1412,6 @@ mt.metrics_report(model_rf, 'RandomForest', X_test, y_test, y_train, data='test'
     
 
 
-__[top](#Contents)__  
-
-
-### SMOTE-Tomek Links for XGBoost
-
-
-```
-%%time
-
-import xgboost as xgb
-
-name = 'XGBoost'
-model = xgb.XGBClassifier(    
-    seed=42,
-    verbosity=0,
-    use_label_encoder=False,
-    objective='multi:softmax',
-    num_class=5,
-#     eval_metric='mlogloss',
-    eval_metric='merror',
-)
-
-
-resample=SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'), random_state=42)
-
-steps=[
-    ('r', resample),
-]
-
-parameters = {    
-    'XGBoost__eta': [0.05, 0.3, 0.5],  # 0.3
-    'XGBoost__gamma': [0, 1, 5],  # 0
-    'XGBoost__max_depth': [3, 6, 10],  # 6
-    'XGBoost__min_child_weight': [0.5, 1],  # 1
-    'XGBoost__subsample': [0.7, 1],  # 1
-    'XGBoost__sampling_method': ['uniform'],  # uniform
-#     'XGBoost__colsample_bytree': [0.7],  # 1
-    'XGBoost__lambda': [1],  # 1
-    'XGBoost__alpha': [0],  # 0
-    'XGBoost__tree_method': ['auto'],  # auto
-    'XGBoost__scale_pos_weight': [0.3, 0.7, 1],  # 1
-#     'XGBoost__predictor': ['cpu_predictor'],  # auto
-    'XGBoost__num_parallel_tree': [1],  # 1
-}
-
-model_xgb, y_pred_xgb = cls_models.checkmodel(
-                                    name,
-                                    model,
-                                    steps=steps,
-                                    parameters=parameters,
-                                    average='macro',
-                                    multiclass=True,
-                                    metric='recall',
-                                    randomized_search=False,
-                                    nfolds=5,
-                                    n_jobs=56,
-                                    save_pickle=False,
-                                    verbose=3
-                                    )
-
-```
-
-
-```
-# check the metrics on testing dataset
-mt.metrics_report(model_xgb, 'RandomForest', X_test, y_test, y_train, data='test')
-```
-
 __[top](#Contents)__ 
     
 ## SMOTE-ENN Method
@@ -1498,7 +1430,7 @@ Developed by Batista et al (2004), this method combines the SMOTE ability to gen
 
 
 
-```
+```python
 resample=SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='all'), random_state=42)
 X, y = resample.fit_resample(X_train, y_train)
 X.info()
@@ -1521,7 +1453,7 @@ __[top](#Contents)__
 ### SMOTE-ENN for SVM
 
 
-```
+```python
 %%time
 
 name = 'SVM'
@@ -1561,18 +1493,12 @@ model_svm, y_pred_svm = cls_models.checkmodel(
 ```
 
     Fitting 5 folds for each of 15 candidates, totalling 75 fits
-    Fitting 5 folds for each of 15 candidates, totalling 75 fits
     Mean cross-validated score of the best_estimator: 0.9118
           Parameter Tuned value
     0             C           1
     1  class_weight    balanced
     2         gamma         0.1 
     
-    Mean cross-validated score of the best_estimator: 0.9118
-          Parameter Tuned value
-    0             C           1
-    1  class_weight    balanced
-    2         gamma         0.1 
     
                   precision    recall  f1-score   support
     
@@ -1586,36 +1512,19 @@ model_svm, y_pred_svm = cls_models.checkmodel(
        macro avg       0.71      0.93      0.77     17511
     weighted avg       0.96      0.94      0.94     17511
     
-                  precision    recall  f1-score   support
-    
-             0.0       0.99      0.93      0.96     14579
-             1.0       0.43      0.87      0.57       426
-             2.0       0.86      0.93      0.89      1112
-             3.0       0.29      0.92      0.44       145
-             4.0       0.97      0.98      0.97      1249
-    
-        accuracy                           0.94     17511
-       macro avg       0.71      0.93      0.77     17511
-    weighted avg       0.96      0.94      0.94     17511
     
     Wall time: 8h 44min 17s
-    Wall time: 8h 44min 17s
     
 
 
     
-![png](README_files/README_55_1.png)
+![png](README_files/README_52_1.png)
     
 
 
 
-    
-![png](README_files/README_55_2.png)
-    
 
-
-
-```
+```python
 # check the metrics on testing dataset
 mt.metrics_report(model_svm[0], 'SVM', X_test, y_test, y_train, data='test')
 ```
@@ -1648,13 +1557,13 @@ mt.metrics_report(model_svm[0], 'SVM', X_test, y_test, y_train, data='test')
 
 
     
-![png](README_files/README_56_1.png)
+![png](README_files/README_53_1.png)
     
 
 
 
     
-![png](README_files/README_56_2.png)
+![png](README_files/README_53_2.png)
     
 
 
@@ -1663,7 +1572,7 @@ __[top](#Contents)__
 ### SMOTE-ENN for LightGBM
 
 
-```
+```python
 %%time
 import lightgbm as lgb
 
@@ -1742,12 +1651,12 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
 
 
     
-![png](README_files/README_58_1.png)
+![png](README_files/README_55_1.png)
     
 
 
 
-```
+```python
 # check the metrics on testing dataset
 mt.metrics_report(model_lgbm, 'LGBMClassifier', X_test, y_test, y_train, data='test')
 ```
@@ -1768,7 +1677,7 @@ mt.metrics_report(model_lgbm, 'LGBMClassifier', X_test, y_test, y_train, data='t
 
 
     
-![png](README_files/README_59_1.png)
+![png](README_files/README_56_1.png)
     
 
 
@@ -1777,7 +1686,7 @@ __[top](#Contents)__
 ### SMOTE-ENN for Random Forest
 
 
-```
+```python
 %%time
 from sklearn.ensemble import RandomForestClassifier
 
@@ -1857,12 +1766,12 @@ model_rf_enn, y_pred_rf_enn = cls_models.checkmodel(
 
 
     
-![png](README_files/README_61_1.png)
+![png](README_files/README_58_1.png)
     
 
 
 
-```
+```python
 # check the metrics on testing dataset
 mt.metrics_report(model_rf_enn, 'RandomForest', X_test, y_test, y_train, data='test')
 ```
@@ -1883,77 +1792,9 @@ mt.metrics_report(model_rf_enn, 'RandomForest', X_test, y_test, y_train, data='t
 
 
     
-![png](README_files/README_62_1.png)
+![png](README_files/README_59_1.png)
     
 
-
-__[top](#Contents)__  
-
-
-### SMOTE-ENN for XGBoost
-
-
-```
-%%time
-
-import xgboost as xgb
-
-name = 'XGBoost'
-model = xgb.XGBClassifier(    
-    seed=42,
-    verbosity=0,
-    use_label_encoder=False,
-    objective='multi:softmax',
-    num_class=5,
-#     eval_metric='mlogloss',
-    eval_metric='merror',
-)
-
-
-resample=SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='all'), random_state=42)
-
-steps=[
-    ('r', resample),
-]
-
-parameters = {    
-    'XGBoost__eta': [0.05, 0.3, 0.5],  # 0.3
-    'XGBoost__gamma': [0, 1, 5],  # 0
-    'XGBoost__max_depth': [3, 6, 10],  # 6
-    'XGBoost__min_child_weight': [0.5, 1],  # 1
-    'XGBoost__subsample': [0.7, 1],  # 1
-    'XGBoost__sampling_method': ['uniform'],  # uniform
-#     'XGBoost__colsample_bytree': [0.7],  # 1
-    'XGBoost__lambda': [1],  # 1
-    'XGBoost__alpha': [0],  # 0
-    'XGBoost__tree_method': ['auto'],  # auto
-    'XGBoost__scale_pos_weight': [0.3, 0.7, 1],  # 1
-#     'XGBoost__predictor': ['cpu_predictor'],  # auto
-    'XGBoost__num_parallel_tree': [1],  # 1
-}
-
-model_xgb, y_pred_xgb = cls_models.checkmodel(
-                                    name,
-                                    model,
-                                    steps=steps,
-                                    parameters=parameters,
-                                    average='macro',
-                                    multiclass=True,
-                                    metric='recall',
-                                    randomized_search=False,
-                                    nfolds=5,
-                                    n_jobs=56,
-                                    save_pickle=False,
-                                    verbose=3
-                                    )
-
-```
-
-
-```
-# check the metrics on testing dataset
-mt.metrics_report(model_xgb, 'XGBoost', X_test, y_test, y_train, data='test')
-```
 
 __[top](#Contents)__ 
 
@@ -1964,36 +1805,68 @@ __[top](#Contents)__
 
 - We use a ___macro-average___ which computes the metric independently for each class and then takes the average (hence treating all classes equally). Macro-average leads to a lower result since it doesn't account for the number of samples in the minority class.  
 
-
-### Original dataset
+### Original dataset (validation)
 <div class="alert-success"></div>
     
 | Model                 | F1 score | Precision | Recall  | Accuracy | AUC |
 |-----------------------|----------|-----------|---------|----------|-----------|
-| __SVM__               | 0.8157   | 0.7602    | __0.9312__  | 0.9568   | 0.9489 |
-| __Light GBM__         | 0.8264   | 0.7695    | __0.9142__  | 0.9529   | 0.9460 |
+|   SVM                 | 0.8157   | 0.7602    | 0.9312  | 0.9568   | 0.9582 |
+|   Light GBM           | 0.8264   | 0.7695    | 0.9142  | 0.9529   | 0.9485 |
 | Random Forest         | 0.7957   | 0.7701    | 0.8810  | 0.9509   | 0.9208 |
-| XGBoost               | 0.9095   | 0.9625    | 0.8681  | 0.9814   | 0.9152 |
-| kNN                   | 0.8893   | 0.9254    | 0.8596  | 0.9769   | 0.9117 |
-| Gradient Boosting     | 0.8581   | 0.9073    | 0.8192  | 0.9718   | 0.8891 |
-| AdaBoost	            | 0.4422   | 0.4277    | 0.6269  | 0.5853   | 0.7611 |
+| XGBoost               | 0.9095   | 0.9625    | 0.8681  | 0.9814   | 0.9249 |
+| kNN                   | 0.8893   | 0.9254    | 0.8596  | 0.9769   | 0.9200 |
+| Gradient Boosting     | 0.8581   | 0.9073    | 0.8192  | 0.9718   | 0.8967 |
+| AdaBoost	            | 0.4422   | 0.4277    | 0.6269  | 0.5853   | 0.7594 |
 
 
-### SMOTE Tomek-Links resampling
+### Original dataset (testing)
+<div class="alert-success"></div>
+    
+| Model                 | F1 score | Precision | Recall  | Accuracy | AUC |
+|-----------------------|----------|-----------|---------|----------|-----------|
+| __SVM__               | 0.8043   | 0.7527    | __0.9149__  | 0.9568   | 0.9489 |
+| Light GBM             | 0.8102   | 0.7513    | 0.9099  | 0.9498   | 0.9460 |
+| Random Forest         | 0.7831   | 0.7611    | 0.8674  | 0.9497   | 0.9208 |
+| XGBoost               | 0.8956   | 0.9576    | 0.8494  | 0.9807   | 0.9152 |
+| kNN                   | 0.8767   | 0.9179    | 0.8433  | 0.9767   | 0.9117 |
+| Gradient Boosting     | 0.8379   | 0.8813    | 0.8058  | 0.9691   | 0.8891 |
+| AdaBoost	            | 0.4450   | 0.4303    | 0.6258  | 0.6010   | 0.7611 |
+
+
+### SMOTE Tomek-Links resampling (validation)
+
+| Model                 | F1 score | Precision | Recall  | Accuracy | AUC |
+|-----------------------|----------|-----------|---------|----------|-----------|
+| SVM                   | 0.7769   | 0.7194    | 0.9240  | 0.9403   | 0.9525 |
+| Light GBM             | 0.8521   | 0.8116    | 0.9061  | 0.9651   | 0.9454 |
+| Random Forest         | 0.7900   | 0.7491    | 0.8984  | 0.9483   | 0.9379 |
+
+
+### SMOTE Tomek-Links resampling (testing)
 
 | Model                 | F1 score | Precision | Recall  | Accuracy | AUC |
 |-----------------------|----------|-----------|---------|----------|-----------|
 | SVM                   | 0.7690   | 0.7130    | 0.9141  | 0.9381   | 0.9471 |
 | Light GBM             | 0.8393   | 0.7966    | 0.9025  | 0.9629   | 0.9430 |
+| Random Forest         | 0.7722   | 0.7379    | 0.8882  | 0.9432   | 0.9319 |
 
 
-### SMOTE ENN resampling
+### SMOTE ENN resampling (validation) 
+
+| Model                 | F1 score | Precision | Recall  | Accuracy | AUC |
+|-----------------------|----------|-----------|---------|----------|-----------|
+| SVM                   | 0.7689   | 0.7074    | 0.9276  | 0.9352   | 0.9543 |
+| Light GBM             | 0.9104   | 0.9057    | 0.9153  | 0.9802   | 0.9521 |
+| Random Forest         | 0.7788   | 0.7285    | 0.9051  | 0.9422   | 0.9415 |
+
+
+### SMOTE ENN resampling (testing)
 
 | Model                 | F1 score | Precision | Recall  | Accuracy | AUC |
 |-----------------------|----------|-----------|---------|----------|-----------|
 | SVM                   | 0.7596   | 0.7006    | 0.9144  | 0.9323   | 0.9470 |
-| Light GBM             | 0.9006   | 0.8955    | 0.9061  | __0.9798__   | 0.9470 |
-
+| Light GBM             | 0.9006   | 0.8955    | 0.9061  | 0.9790   | 0.9470 |
+| Random Forest         | 0.7578   | 0.7154    | 0.8874  | 0.9360   | 0.9310 |
 
 
 
@@ -2771,6 +2644,9 @@ __Testing dataset__
 
 
 __[top](#Contents)__  
+
+
+
 
 
 # TO DO
