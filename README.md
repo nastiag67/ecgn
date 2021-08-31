@@ -7,17 +7,28 @@ __[2. Exploratory data analysis  ](#EXPLORATORY-DATA-ANALYSIS)__
 __[3. Model Selection](#MODEL-SELECTION)__  
     [3.1. Individual machine learning models](#Individual-machine-learning-models)  
     [3.1.1. K-Nearest Neighbors](#K-Nearest-Neighbors)  
-    [3.1.2. SVM](#SVM)  
+    [3.1.2. SVM](#SVM) 
     [3.2. Ensembles and boosting](#Ensembles-and-boosting)  
     [3.2.1. XGBoost](#XGBoost)  
     [3.2.2. Gradient boosting](#Gradient-boosting)  
     [3.2.3. LightGBM](#LightGBM)  
-    [⁽ⁿᵉʷ⁾3.2.4. AdaBoost](#AdaBoost)  
+    [3.2.4. AdaBoost](#AdaBoost)  
     [3.2.5. Random Forest](#Random-Forest)  
+    [⁽ⁿᵉʷ⁾3.3. Deep Learning](#Deep-Learning)  
+    [⁽ⁿᵉʷ⁾3.3.1. CNN](#CNN)  
+    [⁽ⁿᵉʷ⁾3.3.2. LSTM](#LSTM)  
+    [⁽ⁿᵉʷ⁾3.3.3. Bidirectional LSTM](#Bidirectional-LSTM)  
     
 __[4. Resampling](#Resamling)__  
     [⁽ⁿᵉʷ⁾4.1. SMOTE-Tomek Links Method](#SMOTE-Tomek-Links-Method)  
+    [⁽ⁿᵉʷ⁾4.1.1 SMOTE-Tomek Links for SVM](#SMOTE-Tomek-Links-for-SVM)  
+    [⁽ⁿᵉʷ⁾4.1.2 SMOTE-Tomek Links for LightGBM](#SMOTE-Tomek-Links-for-LightGBM)  
+    [⁽ⁿᵉʷ⁾4.1.3 SMOTE-Tomek Links for Random Forest](#SMOTE-Tomek-Links-for-Random-Forest)  
     [⁽ⁿᵉʷ⁾4.2. SMOTE-ENN Method](#SMOTE-ENN-Method)  
+    [⁽ⁿᵉʷ⁾4.1. SMOTE-ENN Method](#SMOTE-ENN-Method)  
+    [⁽ⁿᵉʷ⁾4.1.1 SMOTE-ENN for SVM](#SMOTE-ENN-for-SVM)  
+    [⁽ⁿᵉʷ⁾4.1.2 SMOTE-ENN for LightGBM](#SMOTE-ENN-for-LightGBM)  
+    [⁽ⁿᵉʷ⁾4.1.3 SMOTE-ENN for Random Forest](#SMOTE-ENN-for-Random-Forest)  
 
 __[⁽ⁿᵉʷ⁾5. Summary of the results](#Summary-of-the-results)__  
     [⁽ⁿᵉʷ⁾5.1. Metrics over all classes](#Metrics-over-all-classes)  
@@ -45,16 +56,27 @@ from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSe
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 
-from sklearn import metrics
-from sklearn.metrics import jaccard_score
-from sklearn.metrics import f1_score
-from sklearn.metrics import log_loss
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, roc_curve, auc
+from sklearn.metrics import precision_recall_curve
 
 from imblearn.combine import SMOTEENN, SMOTETomek
 from imblearn.under_sampling import EditedNearestNeighbours, TomekLinks
 
 # my packages
 import pipelitools as t
+
+SMALL_SIZE = 8
+MEDIUM_SIZE = 10
+BIGGER_SIZE = 14
+
+plt.rc('font', size=BIGGER_SIZE)          # controls default text sizes
+plt.rc('axes', titlesize=BIGGER_SIZE)     # fontsize of the axes title
+plt.rc('axes', labelsize=BIGGER_SIZE)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=BIGGER_SIZE)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=BIGGER_SIZE)    # fontsize of the tick labels
+plt.rc('legend', fontsize=BIGGER_SIZE)    # legend fontsize
+plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
 ```
 
 # DATASET  
@@ -107,7 +129,18 @@ __[top](#Contents)__
 
 
 ```python
+from pipelitools.preprocessing import outliers as o
+reload(o)
+
+cls_outliers = o.Outliers(X_train)
+df_clean, df_outliers, df_marked = cls_outliers.show_outliers(X_train.columns,
+                                                               how='z_score', show_plot=True, threshold=3)
+```
+
+
+```python
 from pipelitools.preprocessing import eda
+reload(eda)
 
 cls_df = eda.Dataset(X_train)
 cls_df.get_summary(
@@ -117,22 +150,10 @@ cls_df.get_summary(
     categorical=True,
     min_less_0=True,
     class_counts=True,
-    check_normdist=False,
-    plot_boxplots=False)
-```
+    check_normdist=True,
+)
 
-    NaNs:  []
-    Unique formats:  [dtype('float64')]
-    Possible categorical variables (<10 unique values):  []
-    Min value < 0:  []
-    Observations per class:
-     0    72471
-    1     2223
-    2     5788
-    3      641
-    4     6431
-    Name: y, dtype: int64
-    
+```
 
 ### Observations per class
 
@@ -148,12 +169,13 @@ plt.figure(figsize=(10, 7))
 plt.pie(y_train.astype(int).value_counts().sort_index(), labels=labels, autopct='%1.1f%%', pctdistance=1.1, labeldistance=1.3)
 plt.title('Observations per class')
 plt.legend( bbox_to_anchor=(2, 1), loc='upper right')
+plt.savefig(f"pie.png", dpi=300, bbox_inches='tight')
 plt.show()
 ```
 
 
     
-![png](README_files/README_7_0.png)
+![png](README_files/README_8_0.png)
     
 
 
@@ -176,13 +198,14 @@ for i, ax in enumerate(axes.flatten()):
     ax.plot(r_sample.iloc[i, :187], color=next(colors))
 #     print(next(leg))
     ax.legend(next(leg))
+plt.savefig(f"samples.png", dpi=300, bbox_inches='tight')
 plt.show()
 
 ```
 
 
     
-![png](README_files/README_9_0.png)
+![png](README_files/README_10_0.png)
     
 
 
@@ -281,7 +304,7 @@ model_knn, y_pred_knn = cls_models.checkmodel(
 
 
     
-![png](README_files/README_14_1.png)
+![png](README_files/README_15_1.png)
     
 
 
@@ -310,7 +333,7 @@ mt.metrics_report(model_knn, 'KNN', X_test, y_test, y_train, data='test')
 
 
     
-![png](README_files/README_15_1.png)
+![png](README_files/README_16_1.png)
     
 
 
@@ -370,7 +393,7 @@ model_svm, y_pred_svm = cls_models.checkmodel(
 
 
     
-![png](README_files/README_17_1.png)
+![png](README_files/README_18_1.png)
     
 
 
@@ -399,7 +422,7 @@ mt.metrics_report(model_svm[0], 'SVM', X_test, y_test, y_train, data='test')
 
 
     
-![png](README_files/README_18_1.png)
+![png](README_files/README_19_1.png)
     
 
 
@@ -493,7 +516,7 @@ model_xgb, y_pred_xgb = cls_models.checkmodel(
 
 
     
-![png](README_files/README_20_1.png)
+![png](README_files/README_21_1.png)
     
 
 
@@ -519,7 +542,7 @@ mt.metrics_report(model_xgb, 'XGBoost', X_test, y_test, y_train, data='test')
 
 
     
-![png](README_files/README_21_1.png)
+![png](README_files/README_22_1.png)
     
 
 
@@ -596,7 +619,7 @@ model_gb, y_pre_gb = cls_models.checkmodel(
 
 
     
-![png](README_files/README_23_1.png)
+![png](README_files/README_24_1.png)
     
 
 
@@ -625,7 +648,7 @@ mt.metrics_report(model_gb, 'GradientBoost', X_test, y_test, y_train, data='test
 
 
     
-![png](README_files/README_24_1.png)
+![png](README_files/README_25_1.png)
     
 
 
@@ -704,7 +727,7 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
 
 
     
-![png](README_files/README_26_1.png)
+![png](README_files/README_27_1.png)
     
 
 
@@ -733,7 +756,7 @@ mt.metrics_report(model_lgbm[0], 'Light GBM', X_test, y_test, y_train, data='tes
 
 
     
-![png](README_files/README_27_1.png)
+![png](README_files/README_28_1.png)
     
 
 
@@ -797,7 +820,7 @@ model_ada, y_pred_ada = cls_models.checkmodel(
 
 
     
-![png](README_files/README_29_1.png)
+![png](README_files/README_30_1.png)
     
 
 
@@ -826,7 +849,7 @@ mt.metrics_report(model_ada, 'AdaBoost', X_test, y_test, y_train, data='test')
 
 
     
-![png](README_files/README_30_1.png)
+![png](README_files/README_31_1.png)
     
 
 
@@ -902,7 +925,7 @@ model_rf, y_pred_rf = cls_models.checkmodel(
 
 
     
-![png](README_files/README_32_1.png)
+![png](README_files/README_33_1.png)
     
 
 
@@ -931,44 +954,518 @@ mt.metrics_report(model_rf, 'RandomForest', X_test, y_test, y_train, data='test'
 
 
     
-![png](README_files/README_33_1.png)
+![png](README_files/README_34_1.png)
     
 
 
 __[top](#Contents)__  
 
+## Deep Learning
+
+
+```python
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Reshape, Dense, Activation, Flatten, Convolution1D, Dropout
+from tensorflow.keras.layers import Dense, Flatten, Dropout, LSTM, Input, MaxPooling1D, GlobalAveragePooling1D
+from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, BatchNormalization, Bidirectional
+
+from tensorflow.keras import optimizers
+
+from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
+
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.callbacks import EarlyStopping, History, ModelCheckpoint, LambdaCallback
+
+from sklearn.model_selection import cross_val_score, KFold
+from sklearn.preprocessing import LabelEncoder
+from sklearn.pipeline import Pipeline
+# from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from tensorflow.keras.models import load_model
+
+# from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+X_train = np.array(X_train)
+X_val = np.array(X_val)
+X_test = np.array(X_test)
+
+y_train_dummy=to_categorical(y_train)
+y_val_dummy=to_categorical(y_val)
+y_test_dummy=to_categorical(y_test)
+y_train_dummy.shape
+```
+
+
+
+
+    (70043, 5)
+
+
+
+
+```python
+# For conv1D dimentionality should be 187X1 where 187 is number of features and 1 = 1D Dimentionality of data
+X_train = X_train.reshape(len(X_train), X_train.shape[1], 1)
+X_val = X_val.reshape(len(X_val), X_val.shape[1], 1)
+X_test = X_test.reshape(len(X_test), X_test.shape[1], 1)
+
+```
+
+__[top](#Contents)__  
+
+## CNN
+
+
+```python
+def create_model(kernel_size=6, padding='same', strides=2, pool_size=2, lr=0.001, cl=2, cf=64, dl=2, dn=64, dense=True):
+    """
+    cl - CNN layers
+    cf - CNN filters
+    dl - DNN layers
+    dn - DNN neurons
+    """
+    model = Sequential()
+
+    model.add(Conv1D(filters=cf, kernel_size=kernel_size, activation='relu', padding=padding,
+                     input_shape=(X_train.shape[1], 1)))
+    model.add(BatchNormalization())  # Normalization to avoid overfitting
+    model.add(MaxPooling1D(pool_size=pool_size, strides=strides, padding=padding))
+
+    # Add as many hidden layers as specified in nl
+    for i in range(cl):
+        # Layers have nn filters
+        model.add(Conv1D(filters=cf, kernel_size=kernel_size, activation='relu', padding=padding))
+        model.add(BatchNormalization())
+        model.add(MaxPooling1D(pool_size=pool_size, strides=strides, padding=padding))
+
+    model.add(Flatten())
+
+    if dense:
+        for i in range(dl):
+            model.add(Dense(units=dn, activation='relu'))
+
+    # Output Layer
+    model.add(Dense(5, activation='softmax'))  # output layer
+
+    # loss = 'categorical_crossentropy'
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+
+    return model
+
+model = create_model(
+    kernel_size=6, 
+    padding='same', 
+    strides=2, 
+    pool_size=2, 
+    lr=0.001, 
+    cl=2, 
+    cf=64, 
+    dl=2, 
+    dn=64, 
+    dense=True,
+)
+
+print(model.summary())
+
+from tensorflow.keras.utils import plot_model
+from matplotlib import pyplot as plt
+plot_model(model, to_file ='CNN.png', show_shapes=True)
+img = plt.imread('CNN.png')
+plt.imshow(img)
+plt.show()
+
+
+```
+
+    Model: "sequential_1"
+    _________________________________________________________________
+    Layer (type)                 Output Shape              Param #   
+    =================================================================
+    conv1d_3 (Conv1D)            (None, 187, 64)           448       
+    _________________________________________________________________
+    batch_normalization_3 (Batch (None, 187, 64)           256       
+    _________________________________________________________________
+    max_pooling1d_3 (MaxPooling1 (None, 94, 64)            0         
+    _________________________________________________________________
+    conv1d_4 (Conv1D)            (None, 94, 64)            24640     
+    _________________________________________________________________
+    batch_normalization_4 (Batch (None, 94, 64)            256       
+    _________________________________________________________________
+    max_pooling1d_4 (MaxPooling1 (None, 47, 64)            0         
+    _________________________________________________________________
+    conv1d_5 (Conv1D)            (None, 47, 64)            24640     
+    _________________________________________________________________
+    batch_normalization_5 (Batch (None, 47, 64)            256       
+    _________________________________________________________________
+    max_pooling1d_5 (MaxPooling1 (None, 24, 64)            0         
+    _________________________________________________________________
+    flatten_1 (Flatten)          (None, 1536)              0         
+    _________________________________________________________________
+    dense_3 (Dense)              (None, 64)                98368     
+    _________________________________________________________________
+    dense_4 (Dense)              (None, 64)                4160      
+    _________________________________________________________________
+    dense_5 (Dense)              (None, 5)                 325       
+    =================================================================
+    Total params: 153,349
+    Trainable params: 152,965
+    Non-trainable params: 384
+    _________________________________________________________________
+    None
+    
+
+
+    
+![png](README_files/README_39_1.png)
+    
+
+
+
+```python
+%%time
+
+name = 'CNN'
+
+early_stopping_monitor = EarlyStopping(monitor='val_loss', patience=5)
+
+mc = ModelCheckpoint(f"./temp_pickle_models/{name}_check.h5", monitor='val_loss', save_best_only=True)
+
+from keras.callbacks import CSVLogger
+csv_logger = CSVLogger(f"{name}.csv", append=True, separator=';')
+
+hist = model.fit(X_train, y_train_dummy,
+                    batch_size=32,
+                    epochs=100,
+                    validation_data=(X_val, y_val_dummy),
+                    callbacks=[early_stopping_monitor, mc, csv_logger])
+
+```
+
+
+```python
+reload(mt)
+mt.learning_cuve(hist.history['loss'], hist.history['val_loss'], name='Loss') 
+mt.learning_cuve(hist.history['accuracy'], hist.history['val_accuracy'], name='Accuracy')   
+```
+
+
+    
+![png](README_files/README_41_0.png)
+    
+
+
+
+    
+![png](README_files/README_41_1.png)
+    
+
+
+
+```python
+y_pred = model.predict(X_test)
+
+name = 'CNN'
+
+roc = mt.ROCcurve_multiclass
+pr = mt.PR_multiclass
+cm = mt.CM
+
+mt.compare_models(model, name, X_test, y_test_dummy, y_train_dummy, cm, roc, pr, proba=True, data='test')
+```
+
+    C:\Users\nastiag67\Anaconda3\lib\site-packages\tensorflow\python\keras\engine\sequential.py:430: UserWarning: `model.predict_proba()` is deprecated and will be removed after 2021-01-01. Please use `model.predict()` instead.
+      warnings.warn('`model.predict_proba()` is deprecated and '
+    
+
+                  precision    recall  f1-score   support
+    
+               0       0.99      1.00      0.99     14579
+               1       0.93      0.73      0.82       426
+               2       0.95      0.94      0.95      1112
+               3       0.88      0.74      0.81       145
+               4       0.98      0.99      0.99      1249
+    
+        accuracy                           0.98     17511
+       macro avg       0.94      0.88      0.91     17511
+    weighted avg       0.98      0.98      0.98     17511
+    
+    
+
+
+    
+![png](README_files/README_42_2.png)
+    
+
+
+    ROC-AUC score: 0.9946
+    
+
+
+    
+![png](README_files/README_42_4.png)
+    
+
+
+
+    
+![png](README_files/README_42_5.png)
+    
+
+
+__[top](#Contents)__  
+
+## LSTM
+
+
+```python
+name = 'LSTM'
+
+tf.random.set_seed(42)
+
+def create_model(lr=0.001, layers=1, units=64, dense_layers=2, dense_neurons=64):
+    model = Sequential()
+
+    # Input Layer
+    model.add(LSTM(X_train.shape[1], input_shape=X_train.shape[1:],  return_sequences=True))
+
+    # LSTM Layers
+    for i in range(layers):
+        model.add(LSTM(units, return_sequences=True))
+        model.add(Dropout(0.2))
+
+    model.add(Flatten())
+
+    # Dense Layers
+    for i in range(dense_layers):
+        model.add(Dense(units=dense_neurons, activation='relu'))
+
+    # Output layer
+    model.add(Dense(5, activation='softmax'))
+
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+
+    return model
+
+model = KerasClassifier(build_fn=create_model, verbose=0)
+
+params = {
+    'lr': [0.001],  # 0.001
+    'layers': [2, 5],  # 5
+    'units': [64, 128],  # 128
+    'dense_layers': [0, 2],  # 0roc_auc_score
+    'dense_neurons': [64, 128],  # 128
+}
+
+# total fits: 48
+cv = RandomizedSearchCV(
+    estimator=model,
+    param_distributions=params,
+    cv=3,
+    random_state=42,
+    verbose=3,
+    n_iter=25,
+)
+
+early_stopping_monitor = EarlyStopping(monitor='val_loss', patience=3)
+
+history = History()
+
+mc = ModelCheckpoint(f"./temp_pickle_models/{name}.h5", monitor='val_loss', save_best_only=True)
+
+csv_logger = CSVLogger(f"log_history_{name}.csv", append=True, separator=';')
+
+cv_results = cv.fit(X_train, y_train_dummy,
+                    batch_size=32,
+                    epochs=15,
+                    validation_data=(X_val, y_val_dummy),
+                    callbacks=[early_stopping_monitor, mc, history, csv_logger])
+
+print(cv.best_params_)
+
+```
+
+
+```python
+y_pred = model.predict(X_val)
+
+roc = mt.ROCcurve_multiclass
+pr = mt.PR_multiclass
+cm = mt.CM
+
+mt.compare_models(model, name, X_val, y_val_dummy, y_train_dummy, cm, roc, pr, proba=True, data='validation')
+```
+
+
+```python
+mt.compare_models(model, name, X_test, y_test_dummy, y_train_dummy, cm, roc, pr, proba=True, data='test')
+```
+
+__[top](#Contents)__  
+
+## Bidirectional LSTM
+
+
+```python
+name = 'BLSTM'
+
+X_train = np.array(X_train)
+X_val = np.array(X_val)
+X_test = np.array(X_test)
+
+y_train_dummy=to_categorical(y_train)
+y_val_dummy=to_categorical(y_val)
+y_test_dummy=to_categorical(y_test)
+y_train_dummy.shape
+
+X_train = X_train.reshape(len(X_train), X_train.shape[1], 1)
+X_val = X_val.reshape(len(X_val), X_val.shape[1], 1)
+X_test = X_test.reshape(len(X_test), X_test.shape[1], 1)
+
+tf.random.set_seed(42)
+
+
+def create_model(lr=0.001, layers=1, units=64, dense_layers=2, dense_neurons=64):
+    model = Sequential()
+
+    # Input Layer
+    model.add(Bidirectional(LSTM(units, return_sequences=True), input_shape=X_train.shape[1:]))
+
+    # LSTM Layers
+    for i in range(layers):
+        model.add(Bidirectional(LSTM(units, return_sequences=True)))
+        model.add(Dropout(0.2))
+
+    model.add(Flatten())
+
+    # Dense Layers
+    for i in range(dense_layers):
+        model.add(Dense(units=dense_neurons, activation='relu'))
+
+    # Output layer
+    model.add(Dense(5, activation='softmax'))
+
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+
+    return model
+
+
+model = KerasClassifier(build_fn=create_model, verbose=0)
+
+params = {
+    'lr': [0.001],
+    'layers': [2,5],
+    'units': [64, 128],
+    'dense_layers': [0, 2],
+    'dense_neurons': [64, 128],
+}
+
+cv = RandomizedSearchCV(
+    estimator=model,
+    param_distributions=params,
+    cv=3,
+    random_state=42,
+    verbose=3,
+    n_iter=25,
+)
+
+early_stopping_monitor = EarlyStopping(monitor='val_loss', patience=3)
+
+history = History()
+
+mc = ModelCheckpoint(f"./temp_pickle_models/{name}.h5", monitor='val_loss', save_best_only=True)
+
+csv_logger = CSVLogger(f"log_history_{name}.csv", append=True, separator=';')
+
+# sys.stdout = open('log_CV.csv', 'w')
+cv_results = cv.fit(X_train, y_train_dummy,
+                    batch_size=32,
+                    epochs=15,
+                    validation_data=(X_val, y_val_dummy),
+                    callbacks=[early_stopping_monitor, mc, history, csv_logger])
+
+print(cv.best_params_)
+
+```
+
+    Model: "sequential_1"
+    _________________________________________________________________
+    Layer (type)                 Output Shape              Param #   
+    =================================================================
+    bidirectional (Bidirectional (None, 187, 128)          33792     
+    _________________________________________________________________
+    bidirectional_1 (Bidirection (None, 187, 128)          98816     
+    _________________________________________________________________
+    dropout (Dropout)            (None, 187, 128)          0         
+    _________________________________________________________________
+    bidirectional_2 (Bidirection (None, 187, 128)          98816     
+    _________________________________________________________________
+    dropout_1 (Dropout)          (None, 187, 128)          0         
+    _________________________________________________________________
+    bidirectional_3 (Bidirection (None, 187, 128)          98816     
+    _________________________________________________________________
+    dropout_2 (Dropout)          (None, 187, 128)          0         
+    _________________________________________________________________
+    bidirectional_4 (Bidirection (None, 187, 128)          98816     
+    _________________________________________________________________
+    dropout_3 (Dropout)          (None, 187, 128)          0         
+    _________________________________________________________________
+    bidirectional_5 (Bidirection (None, 187, 128)          98816     
+    _________________________________________________________________
+    dropout_4 (Dropout)          (None, 187, 128)          0         
+    _________________________________________________________________
+    flatten (Flatten)            (None, 23936)             0         
+    _________________________________________________________________
+    dense (Dense)                (None, 5)                 119685    
+    =================================================================
+    Total params: 647,557
+    Trainable params: 647,557
+    Non-trainable params: 0
+    _________________________________________________________________
+    None
+    
+
+
+    
+![png](README_files/README_48_1.png)
+    
+
+
+
+```python
+y_pred = model.predict(X_val)
+
+roc = mt.ROCcurve_multiclass
+pr = mt.PR_multiclass
+cm = mt.CM
+
+mt.compare_models(model, name, X_val, y_val_dummy, y_train_dummy, cm, roc, pr, proba=True, data='validation')
+```
+
+
+```python
+mt.compare_models(model, name, X_test, y_test_dummy, y_train_dummy, cm, roc, pr, proba=True, data='test')
+```
+
+__[top](#Contents)__  
+
 # Resamling  
-
-Approaches to solve problem of imbalanced dataset:
-- oversample the minority class
-- undersample the majority class
-
-__Problem with oversampling__: the idea is to duplicate some random examples from the minority class — thus this technique does not add any new information from the data.
-
-__Problem with undersampling__: conducted by removing some random examples from the majority class, at cost of some information in the original data are removed as well.
-
-One of the solutions to overcome that weakness is to generate new examples that are synthesized from the existing minority class: __Synthetic Minority Oversampling Technique (SMOTE)__. One of the variatons - __SMOTE-Tomek Links__.  
-
-SMOTE generates examples based on the __distance of each data__ (usually using Euclidean distance) and the minority class nearest neighbors, so the generated examples are different from the original minority class.
-
-The __process to generate the synthetic samples__:
-1.	Choose random data from the minority class.
-2.	Calculate the Euclidean distance between the random data and its k nearest neighbors.
-3.	Multiply the difference with a random number between 0 and 1, then add the result to the minority class as a synthetic sample.
-4.	Repeat the procedure until the desired proportion of minority class is met.
-
-This method is effective because the synthetic data that are generated are relatively close with the feature space on the minority class, thus adding new “information” on the data, unlike the original oversampling method.
 
 
 
 ## SMOTE-Tomek Links Method
 
-
-
-```python
-from imblearn.under_sampling import TomekLinks
-from imblearn.combine import SMOTETomek
-```
 
 ### SMOTE-Tomek Links for SVM
 
@@ -1028,7 +1525,7 @@ model_svm, y_pred_svm = cls_models.checkmodel(
 
 
     
-![png](README_files/README_38_1.png)
+![png](README_files/README_54_1.png)
     
 
 
@@ -1057,7 +1554,7 @@ mt.metrics_report(model_svm, 'SVM', X_test, y_test, y_train, data='test')
 
 
     
-![png](README_files/README_39_1.png)
+![png](README_files/README_55_1.png)
     
 
 
@@ -1138,7 +1635,7 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
 
 
     
-![png](README_files/README_41_1.png)
+![png](README_files/README_57_1.png)
     
 
 
@@ -1182,7 +1679,7 @@ mt.metrics_report(loaded_model, 'LightGBM', X_val, y_val, y_train, data='validat
 
 
     
-![png](README_files/README_43_1.png)
+![png](README_files/README_59_1.png)
     
 
 
@@ -1208,7 +1705,7 @@ mt.metrics_report(model_lgbm, 'LightGBM', X_test, y_test, y_train, data='test')
 
 
     
-![png](README_files/README_44_1.png)
+![png](README_files/README_60_1.png)
     
 
 
@@ -1297,7 +1794,7 @@ model_rf, y_pred_rf = cls_models.checkmodel(
 
 
     
-![png](README_files/README_46_1.png)
+![png](README_files/README_62_1.png)
     
 
 
@@ -1382,7 +1879,7 @@ model_rf, y_pred_rf = cls_models.checkmodel(
 
 
     
-![png](README_files/README_47_1.png)
+![png](README_files/README_63_1.png)
     
 
 
@@ -1408,9 +1905,308 @@ mt.metrics_report(model_rf, 'RandomForest', X_test, y_test, y_train, data='test'
 
 
     
-![png](README_files/README_48_1.png)
+![png](README_files/README_64_1.png)
     
 
+
+__[top](#Contents)__  
+
+### SMOTE-Tomek Links for CNN
+
+
+```python
+name = 'CNN'
+
+from imblearn.combine import SMOTEENN, SMOTETomek
+from imblearn.under_sampling import EditedNearestNeighbours, TomekLinks
+resample = SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'), random_state=42)
+X_train, y_train = resample.fit_resample(X_train, y_train)
+
+X_train = np.array(X_train)
+X_val = np.array(X_val)
+X_test = np.array(X_test)
+
+y_train_dummy=to_categorical(y_train)
+y_val_dummy=to_categorical(y_val)
+y_test_dummy=to_categorical(y_test)
+
+X_train = X_train.reshape(len(X_train), X_train.shape[1], 1)
+X_val = X_val.reshape(len(X_val), X_val.shape[1], 1)
+X_test = X_test.reshape(len(X_test), X_test.shape[1], 1)
+
+tf.random.set_seed(42)
+
+def create_model(kernel_size=6, padding='same', strides=2, pool_size=2, lr=0.001, cl=2, cf=64, dl=2, dn=64):
+    """
+    cl - CNN layers
+    cf - CNN filters
+    dl - DNN layers
+    dn - DNN neurons
+    """
+    model = Sequential()
+
+    # Input Layer
+    model.add(Conv1D(filters=cf, kernel_size=kernel_size, activation='relu', padding=padding, input_shape=(X_train.shape[1], 1)))
+    model.add(BatchNormalization()) 
+    model.add(MaxPooling1D(pool_size=pool_size, strides=strides, padding=padding))
+
+    # CNN Layers
+    for i in range(cl):
+        model.add(Conv1D(filters=cf, kernel_size=kernel_size, activation='relu', padding=padding))
+        model.add(BatchNormalization())
+        model.add(MaxPooling1D(pool_size=pool_size, strides=strides, padding=padding))
+
+    model.add(Flatten())
+
+    # Dense Layers
+    for i in range(dl):
+        model.add(Dense(units=dn, activation='relu'))
+
+    # Output Layer
+    model.add(Dense(5, activation='softmax'))  # output layer
+
+    # loss = 'categorical_crossentropy'
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+
+    return model
+
+
+model = KerasClassifier(build_fn=create_model, verbose=0)
+
+params = {
+    'kernel_size': [3, 6],  # 6
+    'padding': ['same'],
+    'strides': [1, 2],  # 2
+    'pool_size': [2, 5],  # 2
+    'cl': [2, 3],  # 2
+    'cf': [64, 128],  # 64
+    'dl': [1, 2],  # 2
+    'dn': [64, 128],  # 64
+}
+
+# total fits: 75
+cv = RandomizedSearchCV(
+    estimator=model,
+    param_distributions=params,
+    cv=3,
+    random_state=42,
+    verbose=3,
+    n_iter=25,
+)
+
+early_stopping_monitor = EarlyStopping(monitor='val_loss', patience=3)
+
+history = History()
+
+mc = ModelCheckpoint(f"./temp_pickle_models/{name}.h5", monitor='val_loss', save_best_only=True)
+
+csv_logger = CSVLogger(f"log_history_{name}.csv", append=True, separator=';')
+
+cv_results = cv.fit(X_train, y_train_dummy,
+                    batch_size=32,
+                    epochs=15,
+                    validation_data=(X_val, y_val_dummy),
+                    callbacks=[early_stopping_monitor, mc, history, csv_logger])
+
+print(cv.best_params_)
+
+```
+
+__[top](#Contents)__  
+
+### SMOTE-Tomek Links for LSTM
+
+
+```python
+name = 'LSTM'
+
+from imblearn.combine import SMOTEENN, SMOTETomek
+from imblearn.under_sampling import EditedNearestNeighbours, TomekLinks
+resample = SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'), random_state=42)
+X_train, y_train = resample.fit_resample(X_train, y_train)
+
+X_train = np.array(X_train)
+X_val = np.array(X_val)
+X_test = np.array(X_test)
+
+y_train_dummy=to_categorical(y_train)
+y_val_dummy=to_categorical(y_val)
+y_test_dummy=to_categorical(y_test)
+
+X_train = X_train.reshape(len(X_train), X_train.shape[1], 1)
+X_val = X_val.reshape(len(X_val), X_val.shape[1], 1)
+X_test = X_test.reshape(len(X_test), X_test.shape[1], 1)
+
+tf.random.set_seed(42)
+
+def create_model(lr=0.001, layers=1, units=64, dense_layers=2, dense_neurons=64):
+    """
+    ll - LSTM layers
+    lu - LSTM units
+    dl - DNN layers
+    dn - DNN neurons
+    """
+    model = Sequential()
+
+    # Input Layer
+    model.add(LSTM(X_train.shape[1], input_shape=X_train.shape[1:], return_sequences=True))
+
+    # LSTM Layers
+    for i in range(layers):
+        model.add(LSTM(units, return_sequences=True))
+        model.add(Dropout(0.2))
+
+    model.add(Flatten())
+
+    # Dense Layers
+    for i in range(dense_layers):
+        model.add(Dense(units=dense_neurons, activation='relu'))
+
+    # Output layer
+    model.add(Dense(5, activation='softmax'))
+
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+
+    return model
+
+model = KerasClassifier(build_fn=create_model, verbose=0)
+
+params = {
+    'lr': [0.001],  # 0.001
+    'layers': [2, 5],  # 5
+    'units': [64, 128],  # 128
+    'dense_layers': [0, 2],  # 0
+    'dense_neurons': [64, 128],  # 128
+}
+
+# total fits: 75
+cv = RandomizedSearchCV(
+    estimator=model,
+    param_distributions=params,
+    cv=3,
+    random_state=42,
+    verbose=3,
+    n_iter=25,
+)
+
+early_stopping_monitor = EarlyStopping(monitor='val_loss', patience=3)
+
+history = History()
+
+mc = ModelCheckpoint(f"./temp_pickle_models/{name}.h5", monitor='val_loss', save_best_only=True)
+
+csv_logger = CSVLogger(f"log_history_{name}.csv", append=True, separator=';')
+
+cv_results = cv.fit(X_train, y_train_dummy,
+                    batch_size=32,
+                    epochs=15,
+                    validation_data=(X_val, y_val_dummy),
+                    callbacks=[early_stopping_monitor, mc, history, csv_logger])
+print(cv.best_params_)
+
+```
+
+__[top](#Contents)__  
+
+### SMOTE-Tomek Links for BLSTM
+
+
+```python
+from imblearn.combine import SMOTEENN, SMOTETomek
+from imblearn.under_sampling import EditedNearestNeighbours, TomekLinks
+resample = SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'), random_state=42)
+X_train, y_train = resample.fit_resample(X_train, y_train)
+
+X_train = np.array(X_train)
+X_val = np.array(X_val)
+X_test = np.array(X_test)
+
+y_train_dummy=to_categorical(y_train)
+y_val_dummy=to_categorical(y_val)
+y_test_dummy=to_categorical(y_test)
+
+X_train = X_train.reshape(len(X_train), X_train.shape[1], 1)
+X_val = X_val.reshape(len(X_val), X_val.shape[1], 1)
+X_test = X_test.reshape(len(X_test), X_test.shape[1], 1)
+
+tf.random.set_seed(42)
+
+name='BLSTM'
+
+def create_model(lr=0.001, layers=1, units=64, dense_layers=2, dense_neurons=64):
+    model = Sequential()
+
+    # Input Layer
+    model.add(Bidirectional(LSTM(units, return_sequences=True), input_shape=X_train.shape[1:]))
+
+    # LSTM Layers
+    for i in range(layers):
+        model.add(Bidirectional(LSTM(units, return_sequences=True)))
+        model.add(Dropout(0.2))
+
+    model.add(Flatten())
+
+    # Dense Layers
+    for i in range(dense_layers):
+        model.add(Dense(units=dense_neurons, activation='relu'))
+
+    # Output layer
+    model.add(Dense(5, activation='softmax'))
+
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+
+    return model
+
+
+model = KerasClassifier(build_fn=create_model, verbose=0)
+
+params = {
+    'lr': [0.001],  #
+    'layers': [2, 5],  #
+    'units': [64, 128],  #
+    'dense_layers': [0, 2],  #
+    'dense_neurons': [64, 128],  #
+}
+
+# total fits:
+cv = RandomizedSearchCV(
+     estimator=model,
+     param_distributions=params,
+     cv=3,
+     random_state=42,
+     verbose=3,
+     n_iter=25,
+ )
+
+
+early_stopping_monitor = EarlyStopping(monitor='val_loss', patience=3)
+
+history = History()
+
+mc = ModelCheckpoint(f"./temp_pickle_models/{name}.h5", monitor='val_loss', save_best_only=True)
+
+csv_logger = CSVLogger(f"log_history_{name}.csv", append=True, separator=';')
+
+cv_results = cv.fit(X_train, y_train_dummy,
+                    batch_size=32,
+                    epochs=15,
+                    validation_data=(X_val, y_val_dummy),
+                    callbacks=[early_stopping_monitor, mc, history, csv_logger])
+print(cv.best_params_)
+
+```
 
 __[top](#Contents)__ 
     
@@ -1418,19 +2214,9 @@ __[top](#Contents)__
 
 
 
-Developed by Batista et al (2004), this method combines the SMOTE ability to generate synthetic examples for minority class and ENN ability to delete some observations from both classes that are identified as having different class between the observation’s class and its K-nearest neighbor majority class. The process of SMOTE-ENN can be explained as follows.
-1.	(Start of SMOTE) Choose random data from the minority class.
-2.	Calculate the distance between the random data and its k nearest neighbors.
-3.	Multiply the difference with a random number between 0 and 1, then add the result to the minority class as a synthetic sample.
-4.	Repeat step number 2–3 until the desired proportion of minority class is met. (End of SMOTE)
-5.	(Start of ENN) Determine K, as the number of nearest neighbors. If not determined, then K=3.
-6.	Find the K-nearest neighbor of the observation among the other observations in the dataset, then return the majority class from the K-nearest neighbor.
-7.	If the class of the observation and the majority class from the observation’s K-nearest neighbor is different, then the observation and its K-nearest neighbor are deleted from the dataset.
-8.	Repeat step 2 and 3 until the desired proportion of each class is fulfilled. (End of ENN)
-
-
 
 ```python
+# resample=SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'), random_state=42)
 resample=SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='all'), random_state=42)
 X, y = resample.fit_resample(X_train, y_train)
 X.info()
@@ -1493,12 +2279,18 @@ model_svm, y_pred_svm = cls_models.checkmodel(
 ```
 
     Fitting 5 folds for each of 15 candidates, totalling 75 fits
+    Fitting 5 folds for each of 15 candidates, totalling 75 fits
     Mean cross-validated score of the best_estimator: 0.9118
           Parameter Tuned value
     0             C           1
     1  class_weight    balanced
     2         gamma         0.1 
     
+    Mean cross-validated score of the best_estimator: 0.9118
+          Parameter Tuned value
+    0             C           1
+    1  class_weight    balanced
+    2         gamma         0.1 
     
                   precision    recall  f1-score   support
     
@@ -1512,15 +2304,32 @@ model_svm, y_pred_svm = cls_models.checkmodel(
        macro avg       0.71      0.93      0.77     17511
     weighted avg       0.96      0.94      0.94     17511
     
+                  precision    recall  f1-score   support
     
+             0.0       0.99      0.93      0.96     14579
+             1.0       0.43      0.87      0.57       426
+             2.0       0.86      0.93      0.89      1112
+             3.0       0.29      0.92      0.44       145
+             4.0       0.97      0.98      0.97      1249
+    
+        accuracy                           0.94     17511
+       macro avg       0.71      0.93      0.77     17511
+    weighted avg       0.96      0.94      0.94     17511
+    
+    Wall time: 8h 44min 17s
     Wall time: 8h 44min 17s
     
 
 
     
-![png](README_files/README_52_1.png)
+![png](README_files/README_74_1.png)
     
 
+
+
+    
+![png](README_files/README_74_2.png)
+    
 
 
 
@@ -1557,13 +2366,13 @@ mt.metrics_report(model_svm[0], 'SVM', X_test, y_test, y_train, data='test')
 
 
     
-![png](README_files/README_53_1.png)
+![png](README_files/README_75_1.png)
     
 
 
 
     
-![png](README_files/README_53_2.png)
+![png](README_files/README_75_2.png)
     
 
 
@@ -1651,7 +2460,7 @@ model_lgbm, y_pred_lgbm = cls_models.checkmodel(
 
 
     
-![png](README_files/README_55_1.png)
+![png](README_files/README_77_1.png)
     
 
 
@@ -1677,7 +2486,7 @@ mt.metrics_report(model_lgbm, 'LGBMClassifier', X_test, y_test, y_train, data='t
 
 
     
-![png](README_files/README_56_1.png)
+![png](README_files/README_78_1.png)
     
 
 
@@ -1766,7 +2575,7 @@ model_rf_enn, y_pred_rf_enn = cls_models.checkmodel(
 
 
     
-![png](README_files/README_58_1.png)
+![png](README_files/README_80_1.png)
     
 
 
@@ -1792,9 +2601,307 @@ mt.metrics_report(model_rf_enn, 'RandomForest', X_test, y_test, y_train, data='t
 
 
     
-![png](README_files/README_59_1.png)
+![png](README_files/README_81_1.png)
     
 
+
+__[top](#Contents)__  
+
+### SMOTE-ENN for CNN
+
+
+```python
+name = 'CNN'
+
+from imblearn.combine import SMOTEENN, SMOTETomek
+from imblearn.under_sampling import EditedNearestNeighbours, TomekLinks
+resample = SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='all'),  random_state=42)
+X_train, y_train = resample.fit_resample(X_train, y_train)
+
+X_train = np.array(X_train)
+X_val = np.array(X_val)
+X_test = np.array(X_test)
+
+y_train_dummy=to_categorical(y_train)
+y_val_dummy=to_categorical(y_val)
+y_test_dummy=to_categorical(y_test)
+
+X_train = X_train.reshape(len(X_train), X_train.shape[1], 1)
+X_val = X_val.reshape(len(X_val), X_val.shape[1], 1)
+X_test = X_test.reshape(len(X_test), X_test.shape[1], 1)
+
+tf.random.set_seed(42)
+
+def create_model(kernel_size=6, padding='same', strides=2, pool_size=2, lr=0.001, cl=2, cf=64, dl=2, dn=64):
+    """
+    """
+    model = Sequential()
+
+    # Input Layer
+    model.add(Conv1D(filters=cf, kernel_size=kernel_size, activation='relu', padding=padding, input_shape=(X_train.shape[1], 1)))
+    model.add(BatchNormalization()) 
+    model.add(MaxPooling1D(pool_size=pool_size, strides=strides, padding=padding))
+
+    # CNN Layers
+    for i in range(cl):
+        model.add(Conv1D(filters=cf, kernel_size=kernel_size, activation='relu', padding=padding))
+        model.add(BatchNormalization())
+        model.add(MaxPooling1D(pool_size=pool_size, strides=strides, padding=padding))
+
+    model.add(Flatten())
+
+    # Dense Layers
+    for i in range(dl):
+        model.add(Dense(units=dn, activation='relu'))
+
+    # Output Layer
+    model.add(Dense(5, activation='softmax'))  # output layer
+
+    # loss = 'categorical_crossentropy'
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+
+    return model
+
+
+model = KerasClassifier(build_fn=create_model, verbose=0)
+
+params = {
+    'kernel_size': [3, 6],  # 6
+    'padding': ['same'],
+    'strides': [1, 2],  # 2
+    'pool_size': [2, 5],  # 2
+    'cl': [2, 3],  # 2
+    'cf': [64, 128],  # 64
+    'dl': [1, 2],  # 2
+    'dn': [64, 128],  # 64
+}
+
+# total fits: 75
+cv = RandomizedSearchCV(
+    estimator=model,
+    param_distributions=params,
+    cv=3,
+    random_state=42,
+    verbose=3,
+    n_iter=25,
+)
+
+early_stopping_monitor = EarlyStopping(monitor='val_loss', patience=3)
+
+history = History()
+
+mc = ModelCheckpoint(f"./temp_pickle_models/{name}.h5", monitor='val_loss', save_best_only=True)
+
+csv_logger = CSVLogger(f"log_history_{name}.csv", append=True, separator=';')
+
+cv_results = cv.fit(X_train, y_train_dummy,
+                    batch_size=32,
+                    epochs=15,
+                    validation_data=(X_val, y_val_dummy),
+                    callbacks=[early_stopping_monitor, mc, history, csv_logger])
+
+print(cv.best_params_)
+
+```
+
+__[top](#Contents)__  
+
+### SMOTE-ENN for LSTM
+
+
+```python
+name = 'LSTM'
+
+from imblearn.combine import SMOTEENN, SMOTETomek
+from imblearn.under_sampling import EditedNearestNeighbours, TomekLinks
+resample = SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='all'), random_state=42)
+X_train, y_train = resample.fit_resample(X_train, y_train)
+
+X_train = np.array(X_train)
+X_val = np.array(X_val)
+X_test = np.array(X_test)
+
+y_train_dummy=to_categorical(y_train)
+y_val_dummy=to_categorical(y_val)
+y_test_dummy=to_categorical(y_test)
+
+X_train = X_train.reshape(len(X_train), X_train.shape[1], 1)
+X_val = X_val.reshape(len(X_val), X_val.shape[1], 1)
+X_test = X_test.reshape(len(X_test), X_test.shape[1], 1)
+
+tf.random.set_seed(42)
+
+def create_model(lr=0.001, layers=1, units=64, dense_layers=2, dense_neurons=64):
+    """
+    ll - LSTM layers
+    lu - LSTM units
+    dl - DNN layers
+    dn - DNN neurons
+    """
+    model = Sequential()
+
+    # Input Layer
+    model.add(LSTM(X_train.shape[1], input_shape=X_train.shape[1:], return_sequences=True))
+
+    # LSTM Layers
+    for i in range(layers):
+        model.add(LSTM(units, return_sequences=True))
+        model.add(Dropout(0.2))
+
+    model.add(Flatten())
+
+    # Dense Layers
+    for i in range(dense_layers):
+        model.add(Dense(units=dense_neurons, activation='relu'))
+
+    # Output layer
+    model.add(Dense(5, activation='softmax'))
+
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+
+    return model
+
+model = KerasClassifier(build_fn=create_model, verbose=0)
+
+params = {
+    'lr': [0.001],  # 0.001
+    'layers': [2, 5],  # 5
+    'units': [64, 128],  # 128
+    'dense_layers': [0, 2],  # 0roc_auc_score
+    'dense_neurons': [64, 128],  # 128
+}
+
+# total fits: 48
+cv = RandomizedSearchCV(
+    estimator=model,
+    param_distributions=params,
+    cv=3,
+    random_state=42,
+    verbose=3,
+    n_iter=25,
+)
+
+early_stopping_monitor = EarlyStopping(monitor='val_loss', patience=3)
+
+history = History()
+
+mc = ModelCheckpoint(f"./temp_pickle_models/{name}.h5", monitor='val_loss', save_best_only=True)
+
+csv_logger = CSVLogger(f"log_history_{name}.csv", append=True, separator=';')
+
+cv_results = cv.fit(X_train, y_train_dummy,
+                    batch_size=32,
+                    epochs=15,
+                    validation_data=(X_val, y_val_dummy),
+                    callbacks=[early_stopping_monitor, mc,
+                    history, csv_logger])
+
+print(cv.best_params_)
+
+```
+
+__[top](#Contents)__  
+
+### SMOTE-ENN for BLSTM
+
+
+```python
+from imblearn.combine import SMOTEENN, SMOTETomek
+from imblearn.under_sampling import EditedNearestNeighbours, TomekLinks
+resample = SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='all'), random_state=42)
+X_train, y_train = resample.fit_resample(X_train, y_train)
+
+X_train = np.array(X_train)
+X_val = np.array(X_val)
+X_test = np.array(X_test)
+
+y_train_dummy=to_categorical(y_train)
+y_val_dummy=to_categorical(y_val)
+y_test_dummy=to_categorical(y_test)
+
+X_train = X_train.reshape(len(X_train), X_train.shape[1], 1)
+X_val = X_val.reshape(len(X_val), X_val.shape[1], 1)
+X_test = X_test.reshape(len(X_test), X_test.shape[1], 1)
+
+tf.random.set_seed(42)
+
+name='BLSTM'
+
+def create_model(lr=0.001, layers=1, units=64, dense_layers=2, dense_neurons=64):
+    model = Sequential()
+
+    # Input Layer
+    model.add(Bidirectional(LSTM(units, return_sequences=True), input_shape=X_train.shape[1:]))
+
+    # LSTM Layers
+    for i in range(layers):
+        model.add(Bidirectional(LSTM(units, return_sequences=True)))
+        model.add(Dropout(0.2))
+
+    model.add(Flatten())
+
+    # Dense Layers
+    for i in range(dense_layers):
+        model.add(Dense(units=dense_neurons, activation='relu'))
+
+    # Output layer
+    model.add(Dense(5, activation='softmax'))
+
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=lr),
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+
+    return model
+
+
+model = KerasClassifier(build_fn=create_model, verbose=0)
+
+params = {
+    'lr': [0.001],  #
+    'layers': [2, 5],  #
+    'units': [64, 128],  #
+    'dense_layers': [0, 2],  #
+    'dense_neurons': [64, 128],  #
+}
+
+# total fits:
+cv = RandomizedSearchCV(
+     estimator=model,
+     param_distributions=params,
+     cv=3,
+     random_state=42,
+     verbose=3,
+     n_iter=25,
+ )
+
+
+early_stopping_monitor = EarlyStopping(monitor='val_loss', patience=3)
+
+history = History()
+
+mc = ModelCheckpoint(f"./temp_pickle_models/{name}.h5", monitor='val_loss', save_best_only=True)
+
+csv_logger = CSVLogger(f"log_history_{name}.csv", append=True, separator=';')
+
+cv_results = cv.fit(X_train, y_train_dummy,
+                    batch_size=32,
+                    epochs=15,
+                    validation_data=(X_val, y_val_dummy),
+                    callbacks=[early_stopping_monitor, mc,
+                    history, csv_logger])
+print(cv.best_params_)
+
+```
 
 __[top](#Contents)__ 
 
@@ -2646,7 +3753,100 @@ __Testing dataset__
 __[top](#Contents)__  
 
 
+```python
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, roc_curve, auc
+import pickle
+reload(mt)
+y_test_dummy = np.array(pd.get_dummies(y_test))
+y_val_dummy = np.array(pd.get_dummies(y_val))
+y_train_dummy = np.array(pd.get_dummies(y_train))
 
+# lst_models = ['LightGBM', 'AdaBoost', 'GradientBoost', 'KNN', 'RandomForest', 'XGBoost', 'SVM']
+lst_models = ['SVM']
+# lst_models = ['LightGBM', 'SVM']
+# folder = "./Reports/SMOTE Tomek-Links resampling/pickle_models/"
+# folder = "./Reports/SMOTE ENN resampling/pickle_models/"
+folder = "./Reports/Original/pickle_models/"
+
+roc = mt.ROCcurve_multiclass
+pr = mt.PR_multiclass
+cm = mt.metrics_report
+
+from keras.models import load_model
+for name in lst_models:
+    loaded_model = pickle.load(open(f"{folder}{name}.sav", 'rb'))
+#     loaded_model = load_model(f"{folder}{name}.sav")
+#     loaded_model = pickle.load(open(f"{folder}{name}.sav", 'rb'))
+    y_pred = loaded_model.predict(X_val)
+    y_pred = np.argmax(y_pred, axis=1)
+    print(f"======================{name}======================")
+    # F1 = 2 * (precision * recall) / (precision + recall)
+    f1s = metrics.f1_score(y_val, y_pred, average='macro')
+    print(f"F1-score: {round(f1s, 4)}")
+    precision = metrics.precision_score(y_val, y_pred, average='macro')
+    print(f"precision: {round(precision, 4)}")
+    recall = metrics.recall_score(y_val, y_pred, average='macro')
+    print(f"recall: {round(recall, 4)}")
+    # set of labels predicted for a sample must exactly match the corresponding set of labels in y_true
+    accuracy = metrics.accuracy_score(y_val, y_pred)
+    print(f"ACCURACY: {round(accuracy, 4)}")
+    y_pred_dummy = np.array(pd.get_dummies(y_pred))
+    y_val_dummy = np.array(pd.get_dummies(y_val))
+    print(f"ROC-AUC score: {round(roc_auc_score(y_val_dummy, y_pred_dummy, average='macro'), 4)}")
+    
+    print(f"============================================")
+    print('TESTING')
+    print(f"============================================")
+   
+    f1s = metrics.f1_score(y_test, y_pred, average='macro')
+    print(f"F1-score: {round(f1s, 4)}")
+    precision = metrics.precision_score(y_test, y_pred, average='macro')
+    print(f"precision: {round(precision, 4)}")
+    recall = metrics.recall_score(y_test, y_pred, average='macro')
+    print(f"recall: {round(recall, 4)}")
+    # set of labels predicted for a sample must exactly match the corresponding set of labels in y_true
+    accuracy = metrics.accuracy_score(y_test, y_pred)
+    print(f"ACCURACY: {round(accuracy, 4)}")
+    y_pred_dummy = np.array(pd.get_dummies(y_pred))
+    y_test_dummy = np.array(pd.get_dummies(y_test))
+    print(f"ROC-AUC score: {round(roc_auc_score(y_test_dummy, y_pred_dummy, average='macro'), 4)}")
+    
+
+```
+
+
+    ---------------------------------------------------------------------------
+
+    AxisError                                 Traceback (most recent call last)
+
+    <ipython-input-9-f1fddcab11f3> in <module>
+         23 #     loaded_model = pickle.load(open(f"{folder}{name}.sav", 'rb'))
+         24     y_pred = loaded_model.predict(X_val)
+    ---> 25     y_pred = np.argmax(y_pred, axis=1)
+         26     print(f"======================{name}======================")
+         27     # F1 = 2 * (precision * recall) / (precision + recall)
+    
+
+    <__array_function__ internals> in argmax(*args, **kwargs)
+    
+
+    ~\Anaconda3\lib\site-packages\numpy\core\fromnumeric.py in argmax(a, axis, out)
+       1186 
+       1187     """
+    -> 1188     return _wrapfunc(a, 'argmax', axis=axis, out=out)
+       1189 
+       1190 
+    
+
+    ~\Anaconda3\lib\site-packages\numpy\core\fromnumeric.py in _wrapfunc(obj, method, *args, **kwds)
+         56 
+         57     try:
+    ---> 58         return bound(*args, **kwds)
+         59     except TypeError:
+         60         # A TypeError occurs if the object does have such a method in its
+    
+
+    AxisError: axis 1 is out of bounds for array of dimension 1
 
 
 # TO DO
