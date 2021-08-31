@@ -3815,42 +3815,5 @@ for name in lst_models:
 ```
 
 
-    ---------------------------------------------------------------------------
-
-    AxisError                                 Traceback (most recent call last)
-
-    <ipython-input-9-f1fddcab11f3> in <module>
-         23 #     loaded_model = pickle.load(open(f"{folder}{name}.sav", 'rb'))
-         24     y_pred = loaded_model.predict(X_val)
-    ---> 25     y_pred = np.argmax(y_pred, axis=1)
-         26     print(f"======================{name}======================")
-         27     # F1 = 2 * (precision * recall) / (precision + recall)
-    
-
-    <__array_function__ internals> in argmax(*args, **kwargs)
-    
-
-    ~\Anaconda3\lib\site-packages\numpy\core\fromnumeric.py in argmax(a, axis, out)
-       1186 
-       1187     """
-    -> 1188     return _wrapfunc(a, 'argmax', axis=axis, out=out)
-       1189 
-       1190 
-    
-
-    ~\Anaconda3\lib\site-packages\numpy\core\fromnumeric.py in _wrapfunc(obj, method, *args, **kwds)
-         56 
-         57     try:
-    ---> 58         return bound(*args, **kwds)
-         59     except TypeError:
-         60         # A TypeError occurs if the object does have such a method in its
-    
-
-    AxisError: axis 1 is out of bounds for array of dimension 1
-
-
-# TO DO
-
-- Fine tuning
 
 __[top](#Contents)__  
