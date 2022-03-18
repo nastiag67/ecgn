@@ -1,6 +1,5 @@
 # Contents
 
-
 __[1. Dataset](#DATASET)__  
 
 __[2. Exploratory data analysis  ](#EXPLORATORY-DATA-ANALYSIS)__  
