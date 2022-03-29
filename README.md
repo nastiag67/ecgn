@@ -35,10 +35,10 @@ __[4. Resampling](#Resamling)__
     [4.2.5 SMOTE ENN for LSTM](#SMOTE-ENN-for-LSTM)  
     [4.2.6 SMOTE ENN for Bidirectional LSTM](#SMOTE-ENN-for-Bidirectional-LSTM)  
 
-__[⁽ⁿᵉʷ⁾5. Summary of the results](#Summary-of-the-results)__  
-    [⁽ⁿᵉʷ⁾5.1. Tables](#Tables)  
-    [⁽ⁿᵉʷ⁾5.2. Metrics per class for original dataset](#Metrics-per-class-for-original-dataset)  
-    [⁽ⁿᵉʷ⁾5.3. Metrics per class for resampled dataset](#Metrics-per-class-for-resampled-dataset)  
+__[5. Summary of the results](#Summary-of-the-results)__  
+    [5.1. Tables](#Tables)  
+    [5.2. Metrics per class for original dataset](#Metrics-per-class-for-original-dataset)  
+    [5.3. Metrics per class for resampled dataset](#Metrics-per-class-for-resampled-dataset)  
 
 
 # DATASET  
